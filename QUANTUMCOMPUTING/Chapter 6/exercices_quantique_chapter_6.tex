@@ -1,0 +1,382 @@
+﻿%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exercices & Solutions — Informatique Quantique
+%% Stage LIA / CERI — Université d'Avignon
+%% Stagiaire : Patrice SEBASTIANO
+%% Encadrant : Serigne GUEYE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \documentclass[light]{ceri/sty/rapport}   % compilation rapide
+% \documentclass[handout]{ceri/sty/rapport}  % impression
+% \documentclass[full]{ceri/sty/rapport}     % avec listes des figures/tableaux
+\documentclass{ceri/sty/rapport}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Informations générales
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\major{Master d'Informatique}
+\specialization{Informatique Quantique}
+\course{Stage de Recherche — LIA Avignon}
+
+\title{Exercices \& Solutions}
+\subtitle{Informatique Quantique}
+
+\author{
+Patrice SEBASTIANO
+}
+
+\advisor[Encadrant]{
+Serigne GUEYE
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Packages supplémentaires
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ifthen}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{braket}
+\usepackage{quantikz}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins}
+
+% Couleurs personnalisées
+\definecolor{exo-bg}{RGB}{230, 240, 255}
+\definecolor{exo-border}{RGB}{50, 100, 200}
+\definecolor{sol-bg}{RGB}{230, 255, 235}
+\definecolor{sol-border}{RGB}{40, 160, 60}
+
+% Environnement exercice — argument optionnel = référence page du livre
+\newcounter{exercice}[section]
+\renewcommand{\theexercice}{\thesection.\arabic{exercice}}
+
+\newtcolorbox[use counter=exercice]{exercice}[1][]{%
+colback=exo-bg,
+colframe=exo-border,
+fonttitle=\bfseries,
+title={Exercice~\theexercice \ifthenelse{\equal{#1}{}}{}{~—~#1}},
+breakable,
+before upper={\parindent=1em}
+}
+
+% Environnement solution — argument optionnel transmis à tcolorbox
+\newtcolorbox{solution}[1][]{%
+colback=sol-bg,
+colframe=sol-border,
+fonttitle=\bfseries,
+title={Solution},
+breakable,
+before upper={\parindent=1em},
+#1
+}
+
+% Environnement démonstration
+\definecolor{demo-bg}{RGB}{248, 240, 255}
+\definecolor{demo-border}{RGB}{120, 50, 180}
+
+\newtcolorbox{demonstration}[1][]{%
+colback=demo-bg,
+colframe=demo-border,
+fonttitle=\bfseries,
+title={Démonstration\ifthenelse{\equal{#1}{}}{}{~—~#1}},
+enhanced jigsaw,
+breakable,
+before upper={\parindent=1em}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Début du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+% Suppress the class's internal "Titre" and "Sommaire" TOC entries
+\let\origaddcontentsline\addcontentsline
+\renewcommand{\addcontentsline}[3]{}
+\maketitle
+\let\addcontentsline\origaddcontentsline
+\sloppy
+
+\phantomsection
+\addcontentsline{toc}{section}{Démonstrations}
+{\color{fgRed}\normalfont\Large\bfseries Démonstrations}
+\par\vspace{2mm}
+\begin{demonstration}[Addition scalaire dans la base de Fourier par paroi de portes de phase]
+
+\textbf{Contexte.}
+Ce résultat (p.~229--230 du livre de référence) justifie pourquoi une
+\emph{paroi de portes de phase} appliquée à un registre encodé en base QFT
+réalise une addition scalaire dans cette base.
+
+\medskip
+\textbf{Théorème.}
+Soit $|\psi_j\rangle$ l'encodage QFT d'un entier $j$, et soit
+$\mathcal{P} = \bigotimes_{h=0}^{m-1} P\!\bigl(\frac{\pi l}{2^h}\bigr)$
+une paroi de portes de phase paramétrée par un entier $l$. Alors :
+\[
+  \mathcal{P}\,|\psi_j\rangle = |\psi_{j+l}\rangle.
+\]
+Appliquer $\mathcal{P}$ \emph{additionne} $l$ à la valeur encodée dans la
+base de Fourier.
+
+\bigskip
+
+Soit $m$ le nombre de qubits, indexés de $h = 0$ (MSB) à $h = m-1$ (LSB).
+Un état de base est $|\underline{k}\rangle = |k_0 k_1 \dots k_{m-1}\rangle$
+avec $k = \sum_{h=0}^{m-1} k_h\, 2^{m-1-h}$.
+
+\medskip
+\noindent\textbf{Étape 1 — Action de $\mathcal{P}$ sur un état de base $|\underline{k}\rangle$.}
+
+\smallskip
+Par distributivité du produit tensoriel :
+\begin{align*}
+\mathcal{P}|\underline{k}\rangle
+  &= \bigotimes_{h=0}^{m-1} P\!\left(\frac{\pi l}{2^h}\right) |k_h\rangle \\
+  &= \prod_{\substack{h=0 \\ k_h \neq 0}}^{m-1}
+       \exp\!\left(\frac{i\pi l}{2^h}\right)
+       \cdot \bigotimes_{h=0}^{m-1} |k_h\rangle \\
+  &= \exp\!\left(\sum_{h=0}^{m-1} \frac{i\pi l\, k_h}{2^h}\right) |\underline{k}\rangle.
+\end{align*}
+
+En mettant $2^{m-1}$ au dénominateur commun :
+\begin{align*}
+\sum_{h=0}^{m-1} \frac{i\pi l\, k_h}{2^h}
+  &= i\pi l \cdot
+     \frac{\displaystyle\sum_{h=0}^{m-1} k_h\, 2^{m-1-h}}{2^{m-1}}
+   = \frac{i\pi l\cdot k}{2^{m-1}}
+   = \frac{2\pi i\, l\cdot k}{2^m}.
+\end{align*}
+
+On obtient donc :
+\[
+  \mathcal{P}|\underline{k}\rangle
+  = \exp\!\left(\frac{2\pi i\, l\cdot k}{2^m}\right)|\underline{k}\rangle.
+\]
+
+\medskip
+\noindent\textbf{Étape 2 — Addition sur un état encodé en base QFT.}
+
+\smallskip
+L'encodage QFT de $j$ est :
+\[
+  |\psi_j\rangle
+  = \frac{1}{\sqrt{2^m}} \sum_{k=0}^{2^m-1}
+    \exp\!\left(\frac{2\pi i\, j\cdot k}{2^m}\right) |\underline{k}\rangle.
+\]
+
+Par linéarité et en utilisant le résultat de l'étape 1 :
+\begin{align*}
+\mathcal{P}|\psi_j\rangle
+  &= \frac{1}{\sqrt{2^m}} \sum_{k=0}^{2^m-1}
+       \exp\!\left(\frac{2\pi i\, j\cdot k}{2^m}\right)
+       \exp\!\left(\frac{2\pi i\, l\cdot k}{2^m}\right) |\underline{k}\rangle \\
+  &= \frac{1}{\sqrt{2^m}} \sum_{k=0}^{2^m-1}
+       \exp\!\left(\frac{2\pi i\,(j+l)\cdot k}{2^m}\right) |\underline{k}\rangle
+   = |\psi_{j+l}\rangle.
+\end{align*}
+
+\[
+  \square
+\]
+
+\end{demonstration}
+
+\bigskip
+
+\setcounter{section}{5}
+\section{Exercices du Chapitre 6}
+\label{sec:chap6}
+
+\begin{exercice}
+Prove that $O_f$ is not only reversible, but also unitary, and hence deserves the name “quantum gate”.
+
+The context is Grover search: the oracle $O_f$ acts as
+\[ O_f\ket{x}\ket{y} = \ket{x}\ket{y\oplus f(x)}. \]
+\end{exercice}
+
+\begin{solution}
+Pour la reversibilite, on remarque que l'application de $O_f$ deux fois donne de nouveau l'etat d'origine :
+\[
+O_f\bigl(O_f\ket{x}\ket{y}\bigr)
+= O_f\ket{x}\ket{y\oplus f(x)}
+= \ket{x}\ket{(y\oplus f(x))\oplus f(x)}
+= \ket{x}\ket{y}.
+\]
+Ainsi $O_f^2 = I$, ce qui est equivalent a dire que $O_f$ est reversible.
+
+Autre raisonnement pour la reversibilite : en sortie de l'oracle on connait $x$, donc on connait $f(x)$. On connait egalement $y\oplus f(x)$ en second registre. Comme $f(x)$ est connu, on peut retrouver $y$ en effectuant a nouveau l'operation $\oplus f(x)$ sur ce second registre. Donc l'operation est reversible.
+
+Pour l'unitarite, on considere $O_f$ comme une matrice a controle multiple : les qubits de $x$ servent a controler le bit $y$. Comme $x$ est encode sur $n$ qubits, il existe $2^n$ configurations possibles pour $x$.
+
+Pour chaque configuration $x$ on a soit $f(x)=1$, soit $f(x)=0$. Si $f(x)=1$, le registre $y$ est inverse par un operateur $X_2$. Si $f(x)=0$, le registre $y$ reste unchanged par l'operateur $I_2$.
+
+Donc $O_f$ est une matrice par blocs, avec $2^n$ blocs diagonaux de dimension $2$ chacun. Ces blocs sont soit $X$, soit $I$.
+
+Comme $O_f$ est bloc-diagonale, son adjoint $O_f^\dagger$ se calcule bloc par bloc. Or $I$ et $X$ sont unitaires, donc $I^\dagger = I$ et $X^\dagger = X$. Par consequent $O_f^\dagger = O_f$ et on obtient
+\[
+O_f^\dagger O_f = I.
+\]
+Cela montre que $O_f$ est unitaire.
+
+Ainsi $O_f$ est a la fois reversible et unitaire, ce qui justifie pleinement l'appellation de "quantum gate".
+\end{solution}
+
+\begin{exercice}
+Construct a quantum circuit for $O_f$ where $f$ is a 4-bit Boolean function that takes the value $1$ on $0111$, $1110$, and $0101$, and takes the value $0$ on every other input.
+\end{exercice}
+
+\begin{solution}
+A circuit implementing $O_f$ can be built as the XOR of three multi-controlled NOT operations, one for each input where $f(x)=1$.
+For $0111$, $1110$, and $0101$, the circuit is:
+\[
+\begin{quantikz}
+\lstick{$q_0$} & \gate{X} & \ctrl{4} & \gate{X} & \qw      & \ctrl{4} & \qw      & \gate{X} & \ctrl{4} & \gate{X} & \qw \\
+\lstick{$q_1$} & \qw      & \ctrl{3} & \qw      & \qw      & \ctrl{3} & \qw      & \qw      & \ctrl{3} & \qw      & \qw \\
+\lstick{$q_2$} & \qw      & \ctrl{2} & \qw      & \qw      & \ctrl{2} & \qw      & \gate{X} & \ctrl{2} & \gate{X} & \qw \\
+\lstick{$q_3$} & \qw      & \ctrl{1} & \qw      & \gate{X} & \ctrl{1} & \gate{X} & \qw      & \ctrl{1} & \qw      & \qw \\
+\lstick{$y$}   & \qw      & \targ{}  & \qw      & \qw      & \targ{}  & \qw      & \qw      & \targ{}  & \qw      & \qw
+\end{quantikz}
+\]
+
+The first multi-controlled NOT selects $0111$ by inverting $q_0$ before and after the control.
+The second selects $1110$ by inverting $q_3$ before and after the control.
+The third selects $0101$ by inverting $q_0$ and $q_2$ before and after the control.
+Each target is the ancilla qubit $y$, so the oracle flips $y$ exactly when $f(x)=1$.
+\end{solution}
+
+\begin{exercice}
+Using two's complement with 5 qubits, represent $10$ and $-7$ and perform their addition.
+\end{exercice}
+
+\begin{solution}
+
+\textbf{Standard binary encoding — two useful patterns.}
+In base-2, any $n$-bit string has positional values:
+\[
+  \underbrace{11\cdots1}_{n} = 2^n - 1,
+  \qquad
+  1\underbrace{0\cdots0}_{n-1} = 2^n - 2^{n-1}.
+\]
+These identities simplify decomposing a decimal integer into its binary representation.
+
+\medskip\noindent\textbf{Two's complement convention.}
+Integers are represented modulo $2^n$, so by definition:
+\[
+  -x \;\equiv\; 2^n - x \pmod{2^n}.
+\]
+Under this convention, the most significant bit (MSB) acts as a sign bit: $0$ for non-negative values, $1$ for negative values.
+The register still encodes exactly $2^n$ distinct values, but over the interval $[-2^{n-1},\, 2^{n-1}-1]$ instead of $[0,\, 2^n-1]$.
+
+\medskip\noindent\textbf{Encoding $+10$.}
+\[
+  10 = 8 + 2 = \underbrace{1000}_{2^3} + \underbrace{0010}_{2^1}
+     = \underbrace{0}_{s}1010.
+\]
+The sign bit is $0$ (positive).
+
+\medskip\noindent\textbf{Encoding $-7$.}
+\[
+  -7 \;\equiv\; 2^5 - 7 = 32 - 7 = 25.
+\]
+\[
+  25 = 16 + 8 + 1
+     = \underbrace{10000}_{2^4} + \underbrace{01000}_{2^3} + \underbrace{00001}_{2^0}
+     = 11001.
+\]
+The sign bit is $1$, confirming a negative value.
+
+\medskip\noindent\textbf{Addition.}
+\[
+\begin{array}{r}
+  01010 \quad (+10) \\
++\; 11001 \quad (-7) \\\hline
+\mathbf{1}\,00011
+\end{array}
+\]
+The leading carry $\mathbf{1}$ overflows beyond the 5-qubit register and is discarded (5-bit modular arithmetic).
+
+\medskip\noindent\textbf{Result.}
+The 5-bit register holds $00011 = 3$.
+\[
+  10 + (-7) = 3. \quad\checkmark
+\]
+
+\end{solution}
+
+\begin{exercice}
+Derive a circuit that prepares the \emph{phase representation} of $0$, adds $6$
+to it, and then subtracts $4$. Use $4$ qubits.
+\end{exercice}
+
+\begin{solution}
+\medskip\noindent\textbf{Arithmetic in the phase basis.}
+Adding a constant $c$ multiplies the phase of qubit $k$ by $e^{2\pi ic/2^k}$.
+The single-qubit phase gate $P(\theta)=\mathrm{diag}(1,e^{i\theta})$ achieves
+this: applying $P\!\bigl(\tfrac{2\pi c}{2^k}\bigr)$ to qubit $k$ shifts its
+phase by the required amount.
+For $c=+6$ the angles are $6\pi,\,3\pi,\,\tfrac{3\pi}{2},\,\tfrac{3\pi}{4}$
+(qubits $1$–$4$); for $c=-4$ they are
+$-4\pi,\,-2\pi,\,-\pi,\,-\tfrac{\pi}{2}$.
+
+\medskip\noindent\textbf{Circuit.}
+\[
+\begin{quantikz}
+\lstick{$\ket{0}$} & \gate{H} & \gate{\ensuremath{P(6\pi)}}                        & \gate{\ensuremath{P(-4\pi)}}                        & \qw \\
+\lstick{$\ket{0}$} & \gate{H} & \gate{\ensuremath{P\!\bigl(\tfrac{6\pi}{2}\bigr)}} & \gate{\ensuremath{P\!\bigl(\tfrac{-4\pi}{2}\bigr)}} & \qw \\
+\lstick{$\ket{0}$} & \gate{H} & \gate{\ensuremath{P\!\bigl(\tfrac{6\pi}{4}\bigr)}} & \gate{\ensuremath{P\!\bigl(\tfrac{-4\pi}{4}\bigr)}} & \qw \\
+\lstick{$\ket{0}$} & \gate{H} & \gate{\ensuremath{P\!\bigl(\tfrac{6\pi}{8}\bigr)}} & \gate{\ensuremath{P\!\bigl(\tfrac{-4\pi}{8}\bigr)}} & \qw
+\end{quantikz}
+\]
+
+\end{solution}
+
+\begin{exercice}
+Derive a circuit in the phase (QFT) basis for computing
+$f(x_0, x_1, x_2) = x_1 x_2 - 3x_0 + 2$,
+where $x_0, x_1, x_2 \in \{0,1\}$.
+Determine the minimum output register size $m$ using the two's-complement
+convention, then construct the full circuit.
+\end{exercice}
+
+\begin{solution}
+\textbf{Step 1 — minimum register size.}
+Define
+\[
+  K = \max\!\left(\sum_{g_i > 0} g_i,\; \sum_{g_j < 0} |g_j|\right)
+    = \max(1 + 2,\; 3) = 3.
+\]
+A two's-complement register of $m$ bits covers $[-2^{m-1},\, 2^{m-1}-1]$.
+The condition $K \le 2^{m-1}-1$ gives $3 \le 2^{m-1}-1$, hence $\mathbf{m = 3}$
+(range $[-4,\, 3]$). $\checkmark$
+
+\medskip\noindent\textbf{Step 2 — circuit design.}
+The three output qubits $q_1, q_2, q_3$ (top to bottom, $k = 1, 2, 3$) are
+prepared in the phase representation of $0$ via $H^{\otimes 3}$.
+Each arithmetic term is added by phase rotations $P\!\bigl(\tfrac{2\pi c}{2^k}\bigr)$:
+
+\begin{itemize}
+  \item \textbf{Constant $+2$}: unconditional gates on every output qubit.
+  \item \textbf{Term $+x_1 x_2$}: doubly-controlled gates (controls $x_1$ \emph{and} $x_2$) on every output qubit.
+  \item \textbf{Term $-3x_0$}: singly-controlled gates (control $x_0$) on every output qubit.
+\end{itemize}
+
+\medskip\noindent\textbf{Circuit.}
+\noindent\makebox[\linewidth][c]{%
+\scalebox{0.78}{%
+\begin{quantikz}[column sep=3pt]
+\lstick{$x_0$}     & \qw\slice{\ensuremath{+2}}           & \qw\slice{\ensuremath{+x_1x_2}}     & \qw                        & \qw                          & \qw\slice{\ensuremath{-3x_0}}        & \ctrl{3}                     & \ctrl{4}                       & \ctrl{5}                       & \qw \\
+\lstick{$x_1$}     & \qw                                  & \qw                                  & \ctrl{2}                   & \ctrl{3}                     & \ctrl{4}                             & \qw                          & \qw                            & \qw                            & \qw \\
+\lstick{$x_2$}     & \qw                                  & \qw                                  & \ctrl{1}                   & \ctrl{2}                     & \ctrl{3}                             & \qw                          & \qw                            & \qw                            & \qw \\
+\lstick{$\ket{0}$} & \gate{H}                             & \gate{\ensuremath{P(2\pi)}}          & \gate{\ensuremath{P(\pi)}} & \qw                          & \qw                                  & \gate{\ensuremath{P(-3\pi)}} & \qw                            & \qw                            & \qw \\
+\lstick{$\ket{0}$} & \gate{H}                             & \gate{\ensuremath{P(\pi)}}           & \qw                        & \gate{\ensuremath{P(\pi/2)}} & \qw                                  & \qw                          & \gate{\ensuremath{P(-3\pi/2)}} & \qw                            & \qw \\
+\lstick{$\ket{0}$} & \gate{H}                             & \gate{\ensuremath{P(\pi/2)}}         & \qw                        & \qw                          & \gate{\ensuremath{P(\pi/4)}}         & \qw                          & \qw                            & \gate{\ensuremath{P(-3\pi/4)}} & \qw
+\end{quantikz}%
+}%
+}
+
+\noindent\textit{Note:} $P(2\pi) = I$, so the gate on $q_1$ in the $+2$ stage is
+the identity and may be omitted.
+Applying the inverse QFT (IQFT) to the output register after the circuit recovers
+the two's-complement binary encoding of $f(x_0, x_1, x_2)$.
+\end{solution}
+
+\end{document}

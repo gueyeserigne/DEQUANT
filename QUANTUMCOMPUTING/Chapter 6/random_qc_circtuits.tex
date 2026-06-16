@@ -1,0 +1,80 @@
+﻿\documentclass[border=5pt, multi=tikzpicture]{standalone}
+\usepackage{quantikz}
+\usepackage{amsmath, amssymb}
+\usepackage{braket}
+
+\newcommand{\circuitG}{%
+  \begin{quantikz}
+    \lstick{$x_0$} & \gate{X} & \ctrl{2} & \gate{X} & \qw      & \ctrl{2} & \qw      & \qw \\
+    \lstick{$x_1$} & \qw      & \ctrl{1} & \qw      & \gate{X} & \ctrl{1} & \gate{X} & \qw \\
+    \lstick{$y$}   & \qw      & \targ{}  & \qw      & \qw      & \targ{}  & \qw      & \gate{X}
+  \end{quantikz}%
+}
+
+\begin{document}
+
+% NOT XOR for comparing two bits (definition)
+\begin{quantikz}
+  \qw & \gate[wires=3]{NOT XOR}
+        \gategroup[wires=3, steps=9, style={draw=none},
+          label style={label position=above, anchor=south, yshift=0.4cm}]
+          {\textbf{NOT XOR for comparing two bits}}
+      & \gate[wires=3]{\ensuremath{\equiv}} & \gate{X} & \ctrl{2} & \gate{X} & \qw      & \ctrl{2} & \qw      & \qw \\
+  \qw &                         &                                     & \qw      & \ctrl{1} & \qw      & \gate{X} & \ctrl{1} & \gate{X} & \qw \\
+  \qw &                         &                                     & \qw      & \targ{}  & \qw      & \qw      & \targ{}  & \qw      & \gate{X}
+\end{quantikz}
+
+% NOT XOR for comparing 2-bit strings
+\begin{quantikz}
+  \lstick{$x_1^1$} & \gate[wires=3]{NOT XOR}
+                     \gategroup[wires=7, steps=3, style={draw=none},
+                       label style={label position=above, anchor=south, yshift=0.4cm}]
+                       {\textbf{NOT XOR for comparing 2 bits}}
+                   & \qw      & \qw \\
+  \lstick{$x_1^2$} &                         & \qw      & \qw \\
+  \lstick{$y_1$}   &                         & \ctrl{4} & \qw \\
+  \lstick{$x_2^1$} & \gate[wires=3]{NOT XOR} & \qw      & \qw \\
+  \lstick{$x_2^2$} &                         & \qw      & \qw \\
+  \lstick{$y_2$}   &                         & \ctrl{1} & \qw \\
+  \lstick{$y$}     & \qw                     & \targ{}  & \qw
+\end{quantikz}
+
+% NOT XOR for comparing n-bit strings
+\begin{quantikz}
+  \lstick{$x_1^1$} & \gate[wires=3]{NOT XOR}
+                     \gategroup[wires=11, steps=3, style={draw=none},
+                       label style={label position=above, anchor=south, yshift=0.4cm}]
+                       {\textbf{NOT XOR for comparing \ensuremath{n} bits}}
+                   & \qw      & \qw \\
+  \lstick{$x_1^2$} &                         & \qw      & \qw \\
+  \lstick{$y_1$}   &                         & \ctrl{8} & \qw \\
+  \lstick{$x_2^1$} & \gate[wires=3]{NOT XOR} & \qw      & \qw \\
+  \lstick{$x_2^2$} &                         & \qw      & \qw \\
+  \lstick{$y_2$}   &                         & \ctrl{5} & \qw \\
+  \push{\vdots}    & \push{\vdots}           & \push{\vdots} & \push{\vdots} \\
+  \lstick{$x_n^1$} & \gate[wires=3]{NOT XOR} & \qw      & \qw \\
+  \lstick{$x_n^2$} &                         & \qw      & \qw \\
+  \lstick{$y_n$}   &                         & \ctrl{1} & \qw \\
+  \lstick{$y$}     & \qw                     & \targ{}  & \qw
+\end{quantikz}
+
+
+% Complete Grover Circuit
+\begin{quantikz}
+  \lstick{$idx$} & \gate{H} & \qw
+    & \gate[wires=3]{\shortstack{Load\\Data\\(Pandas)}}
+      \gategroup[wires=4, steps=5,
+        style={dashed, rounded corners, fill=blue!5},
+        label style={label position=above, anchor=south, yshift=0.3cm}]
+        {\textbf{One Complete Grover Iteration}}
+    & \gate[wires=3]{\shortstack{NOT XOR\\Oracle}}
+    & \gate[wires=3]{\shortstack{Unload\\Data\\(Reverse)}}
+    & \gate[wires=3]{\shortstack{Grover\\Diffuser\\(Index Only)}}
+    & \gate[wires=3]{\shortstack{Repeat\\\ensuremath{\approx\!\sqrt{N}}}}
+    & \rstick{[Measure]}\qw \\
+  \lstick{$val$} & \qw & \qw & & & & & & \rstick{[Ignore]}\qw \\
+  \lstick{$tgt$} & \gate{X} & \gate{H} & & & & & & \rstick{[Ignore]}\qw \\
+  \lstick{$anc$} & \qw & \qw & \qw & \ctrl{-1} & \qw & \qw & \qw & \rstick{[Ignore]}\qw
+\end{quantikz}
+
+\end{document}

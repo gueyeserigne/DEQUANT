@@ -1,0 +1,13 @@
+desktop.ini
+.vscode/
+*.aux
+*.log
+*.bcf
+*.out
+*.run.xml
+*.toc
+*.fls
+*.fdb_latexmk
+compile.log
+apikey.json
+apikey_M_Gueye.json

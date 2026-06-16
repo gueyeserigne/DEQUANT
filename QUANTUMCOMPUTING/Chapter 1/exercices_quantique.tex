@@ -1,0 +1,1289 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exercices & Solutions — Informatique Quantique
+%% Stage LIA / CERI — Université d'Avignon
+%% Stagiaire : Patrice SEBASTIANO
+%% Encadrant : Serigne GUEYE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \documentclass[light]{ceri/sty/rapport}   % compilation rapide
+% \documentclass[handout]{ceri/sty/rapport}  % impression
+% \documentclass[full]{ceri/sty/rapport}     % avec listes des figures/tableaux
+\documentclass{ceri/sty/rapport}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Informations générales
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\major{Master d'Informatique}
+\specialization{Informatique Quantique}
+\course{Stage de Recherche — LIA Avignon}
+
+\title{Exercices \& Solutions}
+\subtitle{Informatique Quantique}
+
+\author{
+	Patrice SEBASTIANO
+}
+
+\advisor[Encadrant]{
+	Serigne GUEYE
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Packages supplémentaires
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ifthen}
+\usepackage{amsmath, amssymb}
+\usepackage{mathtools}
+\usepackage{braket}
+\usepackage{booktabs}
+\usepackage{changepage}
+\usepackage{quantikz}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins}
+
+% Couleurs personnalisées
+\definecolor{exo-bg}{RGB}{230, 240, 255}
+\definecolor{exo-border}{RGB}{50, 100, 200}
+\definecolor{sol-bg}{RGB}{230, 255, 235}
+\definecolor{sol-border}{RGB}{40, 160, 60}
+
+% Environnement exercice — argument optionnel = référence page du livre
+\newcounter{exercice}[section]
+\renewcommand{\theexercice}{\thesection.\arabic{exercice}}
+
+\newtcolorbox[use counter=exercice]{exercice}[1][]{%
+	colback=exo-bg,
+	colframe=exo-border,
+	fonttitle=\bfseries,
+	title={Exercice~\theexercice \ifthenelse{\equal{#1}{}}{}{~—~#1}},
+	breakable,
+	before upper={\parindent=1em}
+}
+
+% Environnement solution — argument optionnel transmis à tcolorbox (ex: élargissement)
+\newtcolorbox{solution}[1][]{%
+	colback=sol-bg,
+	colframe=sol-border,
+	fonttitle=\bfseries,
+	title={Solution},
+	breakable,
+	before upper={\parindent=1em},
+	#1
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Début du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+\sloppy
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Exercices du Chapitre 1}
+\label{sec:chap1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{exercice}[p.~11]
+What is the probability of measuring $0$ if the state of a qubit is
+$\sqrt{1/2}\,\ket{0} + \sqrt{1/2}\,\ket{1}$?
+And the probability of measuring $1$?
+What if the state of the qubit is $\sqrt{1/3}\,\ket{0} + \sqrt{2/3}\,\ket{1}$?
+And if it is $\sqrt{1/2}\,\ket{0} - \sqrt{1/2}\,\ket{1}$?
+\end{exercice}
+
+\begin{solution}
+For a state $\alpha\ket{0}+\beta\ket{1}$, the Born rule gives $P(0)=|\alpha|^2$ and
+$P(1)=|\beta|^2$.
+
+\medskip\noindent
+\textbf{State $\sqrt{1/2}\,\ket{0}+\sqrt{1/2}\,\ket{1}$:}
+$P(0)=\tfrac{1}{2}$, $P(1)=\tfrac{1}{2}$.
+
+\medskip\noindent
+\textbf{State $\sqrt{1/3}\,\ket{0}+\sqrt{2/3}\,\ket{1}$:}
+$P(0)=\tfrac{1}{3}$, $P(1)=\tfrac{2}{3}$.
+
+\medskip\noindent
+\textbf{State $\sqrt{1/2}\,\ket{0}-\sqrt{1/2}\,\ket{1}$:}
+$P(0)=\bigl(\sqrt{1/2}\bigr)^2=\tfrac{1}{2}$, $P(1)=\bigl(-\sqrt{1/2}\bigr)^2=\tfrac{1}{2}$.
+The sign of the amplitude does not affect measurement probabilities.
+\end{solution}
+
+\begin{exercice}[p.~13]
+What is the inner product of $\sqrt{1/2}\,\ket{0} + \sqrt{1/2}\,\ket{1}$ and
+$\sqrt{1/3}\,\ket{0} + \sqrt{2/3}\,\ket{1}$?
+And the inner product of $\sqrt{1/2}\,\ket{0} + \sqrt{1/2}\,\ket{1}$ and
+$\sqrt{1/2}\,\ket{0} - \sqrt{1/2}\,\ket{1}$?
+\end{exercice}
+
+\begin{solution}
+Recall $\braket{0|0}=\braket{1|1}=1$ and $\braket{0|1}=\braket{1|0}=0$.
+
+\medskip\noindent
+\textbf{First pair:}
+\[
+  \Bigl(\sqrt{\tfrac{1}{2}}\bra{0}+\sqrt{\tfrac{1}{2}}\bra{1}\Bigr)
+  \Bigl(\sqrt{\tfrac{1}{3}}\ket{0}+\sqrt{\tfrac{2}{3}}\ket{1}\Bigr)
+  = \sqrt{\tfrac{1}{2}}\cdot\sqrt{\tfrac{1}{3}} + \sqrt{\tfrac{1}{2}}\cdot\sqrt{\tfrac{2}{3}}
+  = \frac{1}{\sqrt{6}} + \frac{\sqrt{2}}{\sqrt{6}}
+  = \frac{1+\sqrt{2}}{\sqrt{6}}.
+\]
+
+\medskip\noindent
+\textbf{Second pair:}
+\[
+  \Bigl(\sqrt{\tfrac{1}{2}}\bra{0}+\sqrt{\tfrac{1}{2}}\bra{1}\Bigr)
+  \Bigl(\sqrt{\tfrac{1}{2}}\ket{0}-\sqrt{\tfrac{1}{2}}\ket{1}\Bigr)
+  = \frac{1}{2} - \frac{1}{2} = 0.
+\]
+The two states $\ket{+}$ and $\ket{-}$ are orthogonal.
+\end{solution}
+
+\begin{exercice}[p.~15]
+Check that the gate $X$ matrix is, indeed, unitary.
+What is the inverse of $X$?
+What is the action of $X$ on a general qubit in a state of the form
+$a\ket{0} + b\ket{1}$?
+\end{exercice}
+
+\begin{solution}
+The $X$ gate has matrix $X=\begin{pmatrix}0&1\\1&0\end{pmatrix}$.
+Since $X$ is real and symmetric, $X^\dagger = X^\top = X$, so
+\[
+  X^\dagger X = X^2 =
+  \begin{pmatrix}0&1\\1&0\end{pmatrix}
+  \begin{pmatrix}0&1\\1&0\end{pmatrix}
+  = \begin{pmatrix}1&0\\0&1\end{pmatrix} = I.
+\]
+Hence $X$ is unitary.  Since $X^2=I$, the inverse is $X^{-1}=X$ (the gate is its own inverse).
+
+The action on a general qubit:
+\[
+  X\bigl(a\ket{0}+b\ket{1}\bigr) = aX\ket{0}+bX\ket{1} = a\ket{1}+b\ket{0}.
+\]
+$X$ swaps the amplitudes of $\ket{0}$ and $\ket{1}$, acting as a classical NOT gate.
+\end{solution}
+
+\begin{exercice}[p.~16]
+Check that the gate $H$ matrix is, indeed, unitary.
+What is the action of $H$ on $\ket{+}$ and $\ket{-}$?
+What is the action of $X$ on $\ket{+}$ and $\ket{-}$?
+\end{exercice}
+
+\begin{solution}
+The Hadamard matrix is $H=\tfrac{1}{\sqrt{2}}\begin{pmatrix}1&1\\1&-1\end{pmatrix}$.
+It is real and symmetric, so $H^\dagger=H$, and
+\[
+  H^2 = \frac{1}{2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}^2
+      = \frac{1}{2}\begin{pmatrix}2&0\\0&2\end{pmatrix} = I,
+\]
+hence $H^\dagger H = I$: $H$ is unitary.
+
+\medskip\noindent
+\textbf{Action of $H$:}
+Using $H\ket{0}=\ket{+}$ and $H\ket{1}=\ket{-}$,
+\[
+  H\ket{+} = H\cdot\frac{\ket{0}+\ket{1}}{\sqrt{2}}
+           = \frac{H\ket{0}+H\ket{1}}{\sqrt{2}}
+           = \frac{\ket{+}+\ket{-}}{\sqrt{2}}
+           = \frac{(\ket{0}+\ket{1})+(\ket{0}-\ket{1})}{2} = \ket{0}.
+\]
+\[
+  H\ket{-} = \frac{H\ket{0}-H\ket{1}}{\sqrt{2}} = \frac{\ket{+}-\ket{-}}{\sqrt{2}}
+           = \frac{2\ket{1}/\sqrt{2}}{\sqrt{2}} = \ket{1}.
+\]
+$H$ swaps the two bases: $\ket{+}\leftrightarrow\ket{0}$, $\ket{-}\leftrightarrow\ket{1}$.
+
+\medskip\noindent
+\textbf{Action of $X$:}
+\[
+  X\ket{+} = X\cdot\frac{\ket{0}+\ket{1}}{\sqrt{2}} = \frac{\ket{1}+\ket{0}}{\sqrt{2}} = \ket{+}.
+\]
+\[
+  X\ket{-} = X\cdot\frac{\ket{0}-\ket{1}}{\sqrt{2}} = \frac{\ket{1}-\ket{0}}{\sqrt{2}} = -\ket{-}.
+\]
+$\ket{+}$ is an eigenvector of $X$ with eigenvalue $+1$; $\ket{-}$ with eigenvalue $-1$.
+\end{solution}
+
+\begin{exercice}[p.~17]
+Check that $Z\ket{0} = \ket{0}$ and that $Z\ket{1} = -\ket{1}$ in two different
+ways. First, use Dirac notation and the actions of $H$ and $X$ (remember that we
+have defined $Z$ as $HXH$). Then, derive the same result by performing the matrix
+multiplication
+\[
+  \begin{pmatrix}
+    \dfrac{1}{\sqrt{2}} & \dfrac{1}{\sqrt{2}} \\[6pt]
+    \dfrac{1}{\sqrt{2}} & -\dfrac{1}{\sqrt{2}}
+  \end{pmatrix}
+  \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}
+  \begin{pmatrix}
+    \dfrac{1}{\sqrt{2}} & \dfrac{1}{\sqrt{2}} \\[6pt]
+    \dfrac{1}{\sqrt{2}} & -\dfrac{1}{\sqrt{2}}
+  \end{pmatrix}.
+\]
+\end{exercice}
+
+\begin{solution}
+\textbf{Method 1 — Dirac notation.}
+Using $Z=HXH$, $H\ket{0}=\ket{+}$, $H\ket{1}=\ket{-}$, $X\ket{+}=\ket{+}$, $X\ket{-}=-\ket{-}$:
+\[
+  Z\ket{0} = HXH\ket{0} = HX\ket{+} = H\ket{+} = \ket{0}.\qquad\checkmark
+\]
+\[
+  Z\ket{1} = HXH\ket{1} = HX\ket{-} = H(-\ket{-}) = -H\ket{-} = -\ket{1}.\qquad\checkmark
+\]
+
+\medskip\noindent
+\textbf{Method 2 — Matrix multiplication.}
+With $H=\tfrac{1}{\sqrt{2}}\begin{pmatrix}1&1\\1&-1\end{pmatrix}$, first compute $XH$:
+\[
+  XH = \frac{1}{\sqrt{2}}\begin{pmatrix}0&1\\1&0\end{pmatrix}\begin{pmatrix}1&1\\1&-1\end{pmatrix}
+     = \frac{1}{\sqrt{2}}\begin{pmatrix}1&-1\\1&1\end{pmatrix}.
+\]
+Then $H(XH)$:
+\[
+  HXH = \frac{1}{2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}1&-1\\1&1\end{pmatrix}
+      = \frac{1}{2}\begin{pmatrix}2&0\\0&-2\end{pmatrix}
+      = \begin{pmatrix}1&0\\0&-1\end{pmatrix} = Z.\qquad\checkmark
+\]
+\end{solution}
+
+\begin{exercice}[p.~18]
+Check that $T^2 = S$. Then, use the most beautiful formula ever
+(i.e., Euler's identity $e^{i\pi}+1=0$) to check that $S^2 = Z$.
+Check also that $S$ and $T$ are unitary.
+Express $S^\dagger$ and $T^\dagger$ as powers of $S$ and $T$.
+\end{exercice}
+
+\begin{solution}
+Recall $T=\begin{pmatrix}1&0\\0&e^{i\pi/4}\end{pmatrix}$ and $S=\begin{pmatrix}1&0\\0&i\end{pmatrix}$.
+
+\medskip\noindent
+\textbf{$T^2=S$:}
+\[
+  T^2 = \begin{pmatrix}1&0\\0&e^{i\pi/4}\end{pmatrix}^2
+      = \begin{pmatrix}1&0\\0&e^{i\pi/2}\end{pmatrix}
+      = \begin{pmatrix}1&0\\0&i\end{pmatrix} = S.\qquad\checkmark
+\]
+
+\medskip\noindent
+\textbf{$S^2=Z$:}
+\[
+  S^2 = \begin{pmatrix}1&0\\0&i\end{pmatrix}^2
+      = \begin{pmatrix}1&0\\0&i^2\end{pmatrix}.
+\]
+Since $i^2=-1$, we get
+$S^2=\begin{pmatrix}1&0\\0&-1\end{pmatrix}=Z$.\quad$\checkmark$
+
+\medskip\noindent
+\textbf{Unitarity:}
+Both $S$ and $T$ are diagonal with entries of modulus~$1$, so their adjoints are
+$S^\dagger=\begin{pmatrix}1&0\\0&-i\end{pmatrix}$ and $T^\dagger=\begin{pmatrix}1&0\\0&e^{-i\pi/4}\end{pmatrix}$.
+One immediately verifies $S^\dagger S = T^\dagger T = I$.
+
+\medskip\noindent
+\textbf{Powers:}
+Since $S^4=(S^2)^2=Z^2=I$, we have $S^{-1}=S^3$, hence $S^\dagger = S^3$.\\
+Since $T^8=(T^4)^2=(S^2)^2=I$, we have $T^{-1}=T^7$, hence $T^\dagger = T^7$.
+\end{solution}
+
+\begin{exercice}[p.~21]
+Check these equivalences by substituting the angles in the definitions of
+$R_X$, $R_Y$, and $R_Z$:
+\[
+  R_X(\pi) = X, \qquad R_Y(\pi) = Y, \qquad R_Z(\pi) = Z,
+\]
+\[
+  R_Z\!\left(\frac{\pi}{2}\right) = S, \qquad R_Z\!\left(\frac{\pi}{4}\right) = T.
+\]
+\end{exercice}
+
+\begin{solution}
+Using the standard definitions
+$R_X(\theta)=\begin{pmatrix}\cos\frac{\theta}{2}&-i\sin\frac{\theta}{2}\\-i\sin\frac{\theta}{2}&\cos\frac{\theta}{2}\end{pmatrix}$,
+$R_Y(\theta)=\begin{pmatrix}\cos\frac{\theta}{2}&-\sin\frac{\theta}{2}\\\sin\frac{\theta}{2}&\cos\frac{\theta}{2}\end{pmatrix}$,
+$R_Z(\theta)=\begin{pmatrix}e^{-i\theta/2}&0\\0&e^{i\theta/2}\end{pmatrix}$.
+
+\[
+  R_X(\pi)=\begin{pmatrix}0&-i\\-i&0\end{pmatrix}=-i\begin{pmatrix}0&1\\1&0\end{pmatrix}=-iX,\qquad
+  R_Y(\pi)=\begin{pmatrix}0&-1\\1&0\end{pmatrix}=-iY,
+\]
+\[
+  R_Z(\pi)=\begin{pmatrix}-i&0\\0&i\end{pmatrix}=-i\begin{pmatrix}1&0\\0&-1\end{pmatrix}=-iZ.
+\]
+Each rotation equals the corresponding Pauli gate \emph{up to the global phase} $-i$, which is unobservable.
+\[
+  R_Z\!\left(\tfrac{\pi}{2}\right)
+    =\begin{pmatrix}e^{-i\pi/4}&0\\0&e^{i\pi/4}\end{pmatrix}
+    =e^{-i\pi/4}\begin{pmatrix}1&0\\0&e^{i\pi/2}\end{pmatrix}
+    =e^{-i\pi/4}S,
+\]
+\[
+  R_Z\!\left(\tfrac{\pi}{4}\right)
+    =e^{-i\pi/8}\begin{pmatrix}1&0\\0&e^{i\pi/4}\end{pmatrix}
+    =e^{-i\pi/8}T.
+\]
+Again, equality with $S$ and $T$ holds up to a global phase.
+\end{solution}
+
+\begin{exercice}[p.~22]
+Show that $U(\theta,\varphi,\lambda)$ is unitary.
+Check that $R_X(\theta) = U(\theta,-\pi/2,\pi/2)$, that
+$R_Y(\theta) = U(\theta,0,0)$ and that, up to a global phase,
+$R_Z(\theta) = U(0,0,\theta)$.
+\end{exercice}
+
+\begin{solution}
+The universal single-qubit gate is defined as
+\[
+  U(\theta,\varphi,\lambda)
+  =\begin{pmatrix}
+      \cos\dfrac{\theta}{2} & -e^{i\lambda}\sin\dfrac{\theta}{2}\\[8pt]
+      e^{i\varphi}\sin\dfrac{\theta}{2} & e^{i(\varphi+\lambda)}\cos\dfrac{\theta}{2}
+   \end{pmatrix}.
+\]
+
+\medskip\noindent
+\textbf{Unitarity.}
+Set $c=\cos\tfrac{\theta}{2}$ and $s=\sin\tfrac{\theta}{2}$ for brevity.
+The conjugate transpose is
+\[
+  U^\dagger
+  =\begin{pmatrix}
+      c           & e^{-i\varphi}s         \\[4pt]
+      -e^{-i\lambda}s & e^{-i(\varphi+\lambda)}c
+   \end{pmatrix}.
+\]
+We compute $U^\dagger U$ entry by entry.
+\begin{align*}
+  (U^\dagger U)_{11}
+    &= c\cdot c + e^{-i\varphi}s\cdot e^{i\varphi}s
+     = c^2+s^2 = 1.\\[4pt]
+  (U^\dagger U)_{12}
+    &= c\cdot(-e^{i\lambda}s) + e^{-i\varphi}s\cdot e^{i(\varphi+\lambda)}c
+     = -e^{i\lambda}cs + e^{i\lambda}cs = 0.\\[4pt]
+  (U^\dagger U)_{21}
+    &= -e^{-i\lambda}s\cdot c + e^{-i(\varphi+\lambda)}c\cdot e^{i\varphi}s
+     = -e^{-i\lambda}cs + e^{-i\lambda}cs = 0.\\[4pt]
+  (U^\dagger U)_{22}
+    &= (-e^{-i\lambda}s)(-e^{i\lambda}s) + e^{-i(\varphi+\lambda)}c\cdot e^{i(\varphi+\lambda)}c
+     = s^2+c^2 = 1.
+\end{align*}
+Hence $U^\dagger U = I$, so $U$ is unitary.\quad$\checkmark$
+
+\medskip\noindent
+\textbf{$R_X(\theta) = U(\theta,\,-\pi/2,\,\pi/2)$.}
+Substitute $\varphi=-\pi/2$ and $\lambda=\pi/2$:
+\begin{align*}
+  -e^{i\lambda}s &= -e^{i\pi/2}s = -is,\\
+  e^{i\varphi}s  &= e^{-i\pi/2}s = -is,\\
+  e^{i(\varphi+\lambda)}c &= e^{i(-\pi/2+\pi/2)}c = e^{0}c = c.
+\end{align*}
+Therefore
+\[
+  U(\theta,-\tfrac{\pi}{2},\tfrac{\pi}{2})
+  = \begin{pmatrix}c & -is\\-is & c\end{pmatrix}
+  = R_X(\theta).\quad\checkmark
+\]
+
+\medskip\noindent
+\textbf{$R_Y(\theta) = U(\theta,\,0,\,0)$.}
+Substitute $\varphi=0$ and $\lambda=0$:
+\[
+  U(\theta,0,0)
+  = \begin{pmatrix}c & -s\\s & c\end{pmatrix}
+  = R_Y(\theta).\quad\checkmark
+\]
+
+\medskip\noindent
+\textbf{$R_Z(\theta) = U(0,\,0,\,\theta)$ up to a global phase.}
+Substitute $\theta=0$ (so $c=1$, $s=0$) and $\lambda=\theta$:
+\[
+  U(0,0,\theta)
+  = \begin{pmatrix}1 & 0\\0 & e^{i\theta}\end{pmatrix}.
+\]
+Factor out $e^{i\theta/2}$:
+\[
+  U(0,0,\theta)
+  = e^{i\theta/2}
+    \begin{pmatrix}e^{-i\theta/2} & 0\\0 & e^{i\theta/2}\end{pmatrix}
+  = e^{i\theta/2}\,R_Z(\theta).
+\]
+The two gates differ only by the global phase $e^{i\theta/2}$, which is
+physically unobservable.\quad$\checkmark$
+\end{solution}
+
+\begin{exercice}[p.~23]
+Check that, with the preceding circuit, the state before measurement is
+$\sqrt{p}\,\ket{0} + \sqrt{1-p}\,\ket{1}$ and, hence, the probability of
+measuring $0$ is $p$ and that of measuring $1$ is $1-p$.
+\end{exercice}
+
+\begin{solution}
+The circuit is:
+\[
+\begin{quantikz}
+  \lstick{$\ket{0}$} & \gate{R_Y(\theta)} & \meter{}
+\end{quantikz}
+\]
+
+\medskip\noindent
+\textbf{Choice of $\theta$.}
+We set $\theta = 2\arccos\!\left(\sqrt{p}\right)$, so that
+\[
+  \frac{\theta}{2} = \arccos\!\left(\sqrt{p}\right)
+  \quad\Longrightarrow\quad
+  \cos\frac{\theta}{2} = \sqrt{p}.
+\]
+From the Pythagorean identity $\sin^2\!\frac{\theta}{2}+\cos^2\!\frac{\theta}{2}=1$:
+\[
+  \sin\frac{\theta}{2}
+  = \sqrt{1-\cos^2\!\frac{\theta}{2}}
+  = \sqrt{1-p}.
+\]
+
+\medskip\noindent
+\textbf{Explicit computation of $R_Y(\theta)\ket{0}$.}
+\[
+  R_Y(\theta)\ket{0}
+  =\begin{pmatrix}\cos\dfrac{\theta}{2} & -\sin\dfrac{\theta}{2}\\[8pt]
+                  \sin\dfrac{\theta}{2} &  \cos\dfrac{\theta}{2}\end{pmatrix}
+   \begin{pmatrix}1\\0\end{pmatrix}
+  =\begin{pmatrix}\cos\dfrac{\theta}{2}\\[8pt]\sin\dfrac{\theta}{2}\end{pmatrix}
+  =\begin{pmatrix}\sqrt{p}\\[4pt]\sqrt{1-p}\end{pmatrix}
+  =\sqrt{p}\,\ket{0}+\sqrt{1-p}\,\ket{1}.
+\]
+
+\medskip\noindent
+\textbf{Probabilities.}
+By the Born rule applied to the state $\sqrt{p}\,\ket{0}+\sqrt{1-p}\,\ket{1}$:
+\[
+  P(\text{measure }0) = \left(\sqrt{p}\right)^2 = p,\qquad
+  P(\text{measure }1) = \left(\sqrt{1-p}\right)^2 = 1-p.\quad\checkmark
+\]
+\end{solution}
+
+\begin{exercice}[p.~26]
+Derive the formulas for the probability of measuring $1$ on the first qubit
+in a general two-qubit state and for the state of the system after the
+measurement.
+\end{exercice}
+
+\begin{solution}
+Write the general two-qubit state as
+$\ket{\psi}=\alpha_{00}\ket{00}+\alpha_{01}\ket{01}+\alpha_{10}\ket{10}+\alpha_{11}\ket{11}$.
+Grouping by the value of the first qubit:
+\[
+  \ket{\psi}=\ket{0}\!\otimes\!(\alpha_{00}\ket{0}+\alpha_{01}\ket{1})
+            +\ket{1}\!\otimes\!(\alpha_{10}\ket{0}+\alpha_{11}\ket{1}).
+\]
+The probability of getting outcome $1$ on the first qubit is
+\[
+  P(q_1=1) = |\alpha_{10}|^2+|\alpha_{11}|^2.
+\]
+After the measurement the state collapses to the normalised projection onto the
+first-qubit-$1$ subspace:
+\[
+  \ket{\psi'} = \frac{\alpha_{10}\ket{10}+\alpha_{11}\ket{11}}{\sqrt{|\alpha_{10}|^2+|\alpha_{11}|^2}}
+              = \ket{1}\otimes\frac{\alpha_{10}\ket{0}+\alpha_{11}\ket{1}}{\sqrt{|\alpha_{10}|^2+|\alpha_{11}|^2}}.
+\]
+\end{solution}
+
+\begin{exercice}[p.~27]
+Check that, given any pair of unitary matrices $U_1$ and $U_2$, the inverse
+of $U_1 \otimes U_2$ is $U_1^\dagger \otimes U_2^\dagger$ and that
+$(U_1 \otimes U_2)^\dagger = U_1^\dagger \otimes U_2^\dagger$.
+\end{exercice}
+
+\begin{solution}
+\textbf{Adjoint of $U_1\otimes U_2$.}
+Write $U_k=\begin{pmatrix}a_k&b_k\\c_k&d_k\end{pmatrix}$ for $k=1,2$.
+By definition of the Kronecker product:
+\[
+  U_1\otimes U_2
+  =\begin{pmatrix}a_1 U_2 & b_1 U_2\\c_1 U_2 & d_1 U_2\end{pmatrix}.
+\]
+Taking the conjugate-transpose means transposing the block structure \emph{and}
+conjugate-transposing each block:
+\[
+  (U_1\otimes U_2)^\dagger
+  =\begin{pmatrix}\bar a_1 U_2^\dagger & \bar c_1 U_2^\dagger\\
+                  \bar b_1 U_2^\dagger & \bar d_1 U_2^\dagger\end{pmatrix}.
+\]
+On the other hand,
+$U_1^\dagger=\begin{pmatrix}\bar a_1 & \bar c_1\\\bar b_1 & \bar d_1\end{pmatrix}$,
+so
+\[
+  U_1^\dagger\otimes U_2^\dagger
+  =\begin{pmatrix}\bar a_1 U_2^\dagger & \bar c_1 U_2^\dagger\\
+                  \bar b_1 U_2^\dagger & \bar d_1 U_2^\dagger\end{pmatrix}.
+\]
+The two expressions are identical, hence
+$(U_1\otimes U_2)^\dagger = U_1^\dagger\otimes U_2^\dagger$.\quad$\checkmark$
+
+\medskip\noindent
+\textbf{Unitarity.}
+Using the \emph{mixed-product property} $(A\otimes B)(C\otimes D)=(AC)\otimes(BD)$:
+\[
+  (U_1^\dagger\otimes U_2^\dagger)(U_1\otimes U_2)
+  =(U_1^\dagger U_1)\otimes(U_2^\dagger U_2)
+  =I\otimes I=I.\quad\checkmark
+\]
+\end{solution}
+
+\begin{exercice}[p.~28]
+Explicitly compute the matrices for the gates $X \otimes X$ and $H \otimes I$.
+\end{exercice}
+
+\begin{solution}
+Using the block-matrix formula $A\otimes B = (a_{ij}B)_{ij}$, with basis ordering
+$\ket{00},\ket{01},\ket{10},\ket{11}$:
+
+\[
+  X\otimes X =
+  \begin{pmatrix}0\cdot X & 1\cdot X\\1\cdot X & 0\cdot X\end{pmatrix}
+  =\begin{pmatrix}0&0&0&1\\0&0&1&0\\0&1&0&0\\1&0&0&0\end{pmatrix}.
+\]
+
+\[
+  H\otimes I = \frac{1}{\sqrt{2}}
+  \begin{pmatrix}1\cdot I & 1\cdot I\\1\cdot I & -1\cdot I\end{pmatrix}
+  =\frac{1}{\sqrt{2}}\begin{pmatrix}1&0&1&0\\0&1&0&1\\1&0&-1&0\\0&1&0&-1\end{pmatrix}.
+\]
+\end{solution}
+
+\begin{exercice}[p.~30]
+Check these equivalences in two different ways: by computing the matrices of
+the circuits and by obtaining the result of using them with qubits in states
+$\ket{00}$, $\ket{01}$, $\ket{10}$, and $\ket{11}$.
+\end{exercice}
+
+\begin{solution}
+The equivalence to verify is that three CNOTs implement a SWAP gate:
+\[
+  \mathrm{CNOT}_{1\to2}\;\mathrm{CNOT}_{2\to1}\;\mathrm{CNOT}_{1\to2}
+  \;=\;\mathrm{SWAP}.
+\]
+In circuit form:
+\[
+\begin{quantikz}
+  \qw & \ctrl{1}  & \targ{}    & \ctrl{1}  & \qw \\
+  \qw & \targ{}   & \ctrl{-1}  & \targ{}   & \qw
+\end{quantikz}
+\quad=\quad
+\begin{quantikz}
+  \qw & \swap{1} & \qw \\
+  \qw & \targX{} & \qw
+\end{quantikz}
+\]
+
+\textbf{Method 1 — matrices.}
+
+We take $\mathrm{CNOT}_{1\to2}$ as known:
+\[
+  M_1 = \mathrm{CNOT}_{1\to2}
+      = \begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0\end{pmatrix}.
+\]
+
+For $\mathrm{CNOT}_{2\to1}$ (control $= q_2$, target $= q_1$) we start from a generic matrix
+$M_2=\begin{pmatrix}a&b&c&d\\e&f&g&h\\i&j&k&l\\m&n&o&p\end{pmatrix}$
+and impose its action on each basis state.
+
+The gate acts as: flip $q_1$ iff $q_2=1$, i.e.
+\[
+  M_2\ket{00}=\ket{00},\quad
+  M_2\ket{01}=\ket{11},\quad
+  M_2\ket{10}=\ket{10},\quad
+  M_2\ket{11}=\ket{01}.
+\]
+
+Each condition fixes one column of $M_2$ (a matrix column is the image of a basis vector):
+\begin{align*}
+  M_2\ket{00}=\ket{00} &\;\Rightarrow\; \text{col.\,1} = (1,0,0,0)^\top,\\
+  M_2\ket{01}=\ket{11} &\;\Rightarrow\; \text{col.\,2} = (0,0,0,1)^\top,\\
+  M_2\ket{10}=\ket{10} &\;\Rightarrow\; \text{col.\,3} = (0,0,1,0)^\top,\\
+  M_2\ket{11}=\ket{01} &\;\Rightarrow\; \text{col.\,4} = (0,1,0,0)^\top.
+\end{align*}
+
+Hence all 16 unknowns are determined:
+\[
+  M_2 = \mathrm{CNOT}_{2\to1}
+      = \begin{pmatrix}1&0&0&0\\0&0&0&1\\0&0&1&0\\0&1&0&0\end{pmatrix}.
+\]
+
+We now multiply the three matrices $M_1 M_2 M_1$ (rightmost applied first).
+First, $M_2 M_1$:
+\[
+  M_2 M_1
+  =\begin{pmatrix}1&0&0&0\\0&0&0&1\\0&0&1&0\\0&1&0&0\end{pmatrix}
+   \begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0\end{pmatrix}
+  =\begin{pmatrix}1&0&0&0\\0&0&1&0\\0&0&0&1\\0&1&0&0\end{pmatrix}.
+\]
+Then $M_1(M_2 M_1)$:
+\[
+  M_1 M_2 M_1
+  =\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0\end{pmatrix}
+   \begin{pmatrix}1&0&0&0\\0&0&1&0\\0&0&0&1\\0&1&0&0\end{pmatrix}
+  =\begin{pmatrix}1&0&0&0\\0&0&1&0\\0&1&0&0\\0&0&0&1\end{pmatrix}
+  =\mathrm{SWAP}.\quad\checkmark
+\]
+
+\medskip\noindent
+\textbf{Method 2 — basis states.}
+We trace each basis state through the three gates
+$\mathrm{CNOT}_{1\to2}\to\mathrm{CNOT}_{2\to1}\to\mathrm{CNOT}_{1\to2}$
+and compare with $\mathrm{SWAP}\ket{q_1 q_2}=\ket{q_2 q_1}$:
+\begin{align*}
+\ket{00}&\xrightarrow{M_1}\ket{00}\xrightarrow{M_2}\ket{00}\xrightarrow{M_1}\ket{00}
+         =\mathrm{SWAP}\ket{00}.\;\checkmark\\
+\ket{01}&\xrightarrow{M_1}\ket{01}\xrightarrow{M_2}\ket{11}\xrightarrow{M_1}\ket{10}
+         =\mathrm{SWAP}\ket{01}.\;\checkmark\\
+\ket{10}&\xrightarrow{M_1}\ket{11}\xrightarrow{M_2}\ket{01}\xrightarrow{M_1}\ket{01}
+         =\mathrm{SWAP}\ket{10}.\;\checkmark\\
+\ket{11}&\xrightarrow{M_1}\ket{10}\xrightarrow{M_2}\ket{10}\xrightarrow{M_1}\ket{11}
+         =\mathrm{SWAP}\ket{11}.\;\checkmark
+\end{align*}
+\end{solution}
+
+\begin{exercice}[p.~31]
+Is $\sqrt{1/3}\,(\ket{00}+\ket{01}+\ket{11})$ entangled?
+And what about $\tfrac{1}{2}(\ket{00}+\ket{01}+\ket{10}+\ket{11})$?
+\end{exercice}
+
+\begin{solution}
+\textbf{State 1: $\ket{\psi}=\frac{1}{\sqrt{3}}(\ket{00}+\ket{01}+\ket{11})$.}
+Suppose $\ket{\psi}=(a\ket{0}+b\ket{1})\otimes(c\ket{0}+d\ket{1})=ac\ket{00}+ad\ket{01}+bc\ket{10}+bd\ket{11}$.
+Matching coefficients: $ac=ad=bd=\tfrac{1}{\sqrt{3}}$ and $bc=0$.
+From $bc=0$: either $b=0$ (then $bd=0$, contradiction) or $c=0$ (then $ac=0$, contradiction).
+Hence $\ket{\psi}$ is \textbf{entangled}.
+
+\medskip\noindent
+\textbf{State 2: $\ket{\phi}=\tfrac{1}{2}(\ket{00}+\ket{01}+\ket{10}+\ket{11})$.}
+We factor out the two qubits explicitly:
+\begin{align*}
+  \ket{\phi}
+  &= \frac{1}{2}\bigl(\ket{00}+\ket{01}+\ket{10}+\ket{11}\bigr)\\
+  &= \frac{1}{2}\bigl(\ket{0}(\ket{0}+\ket{1})+\ket{1}(\ket{0}+\ket{1})\bigr)\\
+  &= \frac{1}{2}(\ket{0}+\ket{1})\otimes(\ket{0}+\ket{1})\\
+  &= \frac{\ket{0}+\ket{1}}{\sqrt{2}}\otimes\frac{\ket{0}+\ket{1}}{\sqrt{2}}\\
+  &= \ket{+}\otimes\ket{+}.
+\end{align*}
+Since $\ket{\phi}$ can be written as a tensor product of two single-qubit states,
+it is a product state, hence \textbf{not entangled}.
+\end{solution}
+
+\begin{exercice}[p.~34]
+Check that the matrix of $CU$ is
+\[
+  \begin{pmatrix}
+    1 & 0 & 0           & 0           \\
+    0 & 1 & 0           & 0           \\
+    0 & 0 & u_{11}      & u_{12}      \\
+    0 & 0 & u_{21}      & u_{22}
+  \end{pmatrix}
+\]
+where $(u_{ij})_{i,j}$ is the matrix of $U$.
+Check also that $CU$ is unitary. What is the adjoint of $CU$?
+\end{exercice}
+
+\begin{solution}
+$CU$ acts as: $CU\ket{0}\ket{\psi}=\ket{0}\ket{\psi}$ (identity when control is $\ket{0}$) and
+$CU\ket{1}\ket{\psi}=\ket{1}U\ket{\psi}$ (apply $U$ when control is $\ket{1}$).
+
+In the ordered basis $\ket{00},\ket{01},\ket{10},\ket{11}$:
+\begin{align*}
+  CU\ket{00}&=\ket{00}
+             =1\cdot\ket{00}+0\cdot\ket{01}+0\cdot\ket{10}+0\cdot\ket{11},\\
+  CU\ket{01}&=\ket{01}
+             =0\cdot\ket{00}+1\cdot\ket{01}+0\cdot\ket{10}+0\cdot\ket{11},\\
+  CU\ket{10}&=\ket{1}U\ket{0}
+             =\ket{1}(u_{11}\ket{0}+u_{21}\ket{1})
+             =0\cdot\ket{00}+0\cdot\ket{01}+u_{11}\ket{10}+u_{21}\ket{11},\\
+  CU\ket{11}&=\ket{1}U\ket{1}
+             =\ket{1}(u_{12}\ket{0}+u_{22}\ket{1})
+             =0\cdot\ket{00}+0\cdot\ket{01}+u_{12}\ket{10}+u_{22}\ket{11}.
+\end{align*}
+Each image gives a column of the matrix (the $k$-th column is the image of the $k$-th basis vector):
+\[
+  CU =
+  \begin{pmatrix}
+    1 & 0 & 0      & 0      \\
+    0 & 1 & 0      & 0      \\
+    0 & 0 & u_{11} & u_{12} \\
+    0 & 0 & u_{21} & u_{22}
+  \end{pmatrix}.\quad\checkmark
+\]
+
+\medskip\noindent
+\textbf{Unitarity.}
+The matrix is block-diagonal with blocks $I_2$ (top-left) and $U$ (bottom-right).
+Computing $(CU)^\dagger(CU)$ explicitly:
+\[
+  (CU)^\dagger(CU)
+  =\begin{pmatrix}I_2 & 0 \\ 0 & U^\dagger\end{pmatrix}
+   \begin{pmatrix}I_2 & 0 \\ 0 & U\end{pmatrix}
+  =\begin{pmatrix}I_2 I_2 & 0 \\ 0 & U^\dagger U\end{pmatrix}
+  =\begin{pmatrix}I_2 & 0 \\ 0 & I_2\end{pmatrix}
+  = I_4.\quad\checkmark
+\]
+
+\medskip\noindent
+\textbf{Adjoint.}
+\[
+  (CU)^\dagger
+  =\begin{pmatrix}I_2 & 0 \\ 0 & U^\dagger\end{pmatrix}
+  = CU^\dagger.
+\]
+\end{solution}
+
+\begin{exercice}[p.~35]
+Prove the following equivalence: a controlled-$Z$ gate can be obtained from a
+controlled-$X$ gate and two $H$ gates arranged as $H\,CX\,H$:
+\[
+\begin{quantikz}
+  \qw & \ctrl{1} & \qw \\
+  \qw & \gate{Z} & \qw
+\end{quantikz}
+\;=\;
+\begin{quantikz}
+  \qw & \ctrl{1} & \qw \\
+  \gate{H} & \targ{} & \gate{H}
+\end{quantikz}
+\]
+\end{exercice}
+
+\begin{solution}
+
+\textbf{Method 1 — matrices.}
+
+\emph{Matrix of $CZ$.}
+By definition, $CZ$ flips the sign of $\ket{11}$ and acts as identity on all other basis states:
+\[
+  CZ = \begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&1&0\\0&0&0&-1\end{pmatrix}.
+\]
+
+\emph{Matrix of $(I\otimes H)\,\mathrm{CNOT}\,(I\otimes H)$.}
+We compute the two factors in turn.
+
+The matrix of $I\otimes H$ (columns = images of basis vectors):
+\[
+  I\otimes H = \frac{1}{\sqrt{2}}\begin{pmatrix}1&1&0&0\\1&-1&0&0\\0&0&1&1\\0&0&1&-1\end{pmatrix}.
+\]
+
+The matrix of $\mathrm{CNOT}$ (control $=q_1$, target $=q_2$):
+\[
+  \mathrm{CNOT} = \begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0\end{pmatrix}.
+\]
+
+First compute $(I\otimes H)\cdot\mathrm{CNOT}$ by applying $I\otimes H$ to each column of $\mathrm{CNOT}$:
+\begin{align*}
+(I\otimes H)\,e_1 &= \tfrac{1}{\sqrt{2}}(1,1,0,0)^\top,\quad
+(I\otimes H)\,e_2  = \tfrac{1}{\sqrt{2}}(1,-1,0,0)^\top,\\
+(I\otimes H)\,e_4 &= \tfrac{1}{\sqrt{2}}(0,0,1,-1)^\top,\quad
+(I\otimes H)\,e_3  = \tfrac{1}{\sqrt{2}}(0,0,1,1)^\top,
+\end{align*}
+giving
+\[
+  (I\otimes H)\,\mathrm{CNOT}
+  = \frac{1}{\sqrt{2}}\begin{pmatrix}1&1&0&0\\1&-1&0&0\\0&0&1&1\\0&0&-1&1\end{pmatrix}.
+\]
+
+Then right-multiply by $I\otimes H$:
+\[
+  (I\otimes H)\,\mathrm{CNOT}\,(I\otimes H)
+  = \frac{1}{2}
+    \begin{pmatrix}1&1&0&0\\1&-1&0&0\\0&0&1&1\\0&0&-1&1\end{pmatrix}
+    \begin{pmatrix}1&1&0&0\\1&-1&0&0\\0&0&1&1\\0&0&1&-1\end{pmatrix}.
+\]
+Computing row by row:
+\begin{align*}
+  \text{row }1:&\quad \tfrac{1}{2}(1{+}1,\,1{-}1,\,0,\,0) = (1,0,0,0),\\
+  \text{row }2:&\quad \tfrac{1}{2}(1{-}1,\,1{+}1,\,0,\,0) = (0,1,0,0),\\
+  \text{row }3:&\quad \tfrac{1}{2}(0,\,0,\,1{+}1,\,1{-}1) = (0,0,1,0),\\
+  \text{row }4:&\quad \tfrac{1}{2}(0,\,0,\,-1{+}1,\,-1{-}1) = (0,0,0,-1).
+\end{align*}
+Hence
+\[
+  (I\otimes H)\,\mathrm{CNOT}\,(I\otimes H)
+  = \begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&1&0\\0&0&0&-1\end{pmatrix}
+  = CZ.\quad\checkmark
+\]
+
+\bigskip\noindent
+\textbf{Method 2 — basis states.}
+
+We check the action of $(I\otimes H)\,\mathrm{CNOT}\,(I\otimes H)$ on each basis state
+and compare with $CZ$ (identity except $\ket{11}\mapsto-\ket{11}$).
+\[
+\ket{00}\xrightarrow{I\otimes H}\ket{0+}\xrightarrow{\mathrm{CNOT}}\ket{0+}\xrightarrow{I\otimes H}\ket{00}=CZ\ket{00}.\quad\checkmark
+\]
+\[
+\ket{01}\xrightarrow{I\otimes H}\ket{0-}\xrightarrow{\mathrm{CNOT}}\ket{0-}\xrightarrow{I\otimes H}\ket{01}=CZ\ket{01}.\quad\checkmark
+\]
+\[
+\ket{10}\xrightarrow{I\otimes H}\ket{1+}\xrightarrow{\mathrm{CNOT}}\ket{1}(X\ket{+})=\ket{1+}\xrightarrow{I\otimes H}\ket{10}=CZ\ket{10}.\quad\checkmark
+\]
+(Used $X\ket{+}=\ket{+}$ from Ex.~1.4.)
+\[
+\ket{11}\xrightarrow{I\otimes H}\ket{1-}\xrightarrow{\mathrm{CNOT}}-\ket{1-}\xrightarrow{I\otimes H}-\ket{11}=CZ\ket{11}.\quad\checkmark
+\]
+Since both circuits agree on every basis state, they are equal.\quad$\blacksquare$
+\end{solution}
+
+\begin{exercice}[p.~36]
+Show that all four Bell states are entangled.
+Obtain circuits to prepare them.
+\textit{Hint}: you can use $Z$ and $X$ gates after the CNOT in the preceding
+circuit.
+\end{exercice}
+
+\begin{solution}
+The four Bell states are:
+\[
+  \ket{\Phi^\pm}=\frac{\ket{00}\pm\ket{11}}{\sqrt{2}},\qquad
+  \ket{\Psi^\pm}=\frac{\ket{01}\pm\ket{10}}{\sqrt{2}}.
+\]
+
+\textbf{Entanglement.} Each state has the form $\sum_{a,b}\alpha_{ab}\ket{ab}$ with the coefficient matrix
+$\begin{pmatrix}\alpha_{00}&\alpha_{01}\\\alpha_{10}&\alpha_{11}\end{pmatrix}$
+having determinant $\alpha_{00}\alpha_{11}-\alpha_{01}\alpha_{10}\neq 0$
+(it equals $\pm\tfrac{1}{2}$ for all four Bell states). A two-qubit state
+$\ket{\psi}=(a\ket{0}+b\ket{1})\otimes(c\ket{0}+d\ket{1})$ would require this
+determinant to be $acbd-adbc=0$. Hence none of the Bell states is a product state:
+all four are \textbf{entangled}.
+
+\medskip\noindent
+\textbf{Preparation circuits.}
+Starting from $\ket{00}$, the base circuit $(H\otimes I)$ then $\mathrm{CNOT}$ gives $\ket{\Phi^+}$.
+The three remaining Bell states follow by appending correction gates \emph{after} the CNOT:
+
+\[
+\begin{array}{cl}
+\ket{\Phi^+}: &
+  \ket{00}\xrightarrow{H\otimes I}\dfrac{1}{\sqrt{2}}(\ket{00}+\ket{10})
+  \xrightarrow{\mathrm{CNOT}}\dfrac{1}{\sqrt{2}}(\ket{00}+\ket{11}).\\[8pt]
+\ket{\Phi^-}: &
+  \dfrac{1}{\sqrt{2}}(\ket{00}+\ket{11})
+  \xrightarrow{\mathrm{CZ}}\dfrac{1}{\sqrt{2}}(\ket{00}-\ket{11}).\\[8pt]
+\ket{\Psi^+}: &
+  \dfrac{1}{\sqrt{2}}(\ket{00}+\ket{11})
+  \xrightarrow{X\otimes I}\dfrac{1}{\sqrt{2}}(\ket{10}+\ket{01})
+  =\dfrac{1}{\sqrt{2}}(\ket{01}+\ket{10}).\\[8pt]
+\ket{\Psi^-}: &
+  \dfrac{1}{\sqrt{2}}(\ket{00}-\ket{11})
+  \xrightarrow{X\otimes I}\dfrac{1}{\sqrt{2}}(\ket{10}-\ket{01})
+  =-\ket{\Psi^-}.
+\end{array}
+\]
+
+\noindent The last result equals $\ket{\Psi^-}$ up to a global phase of $-1$.
+In summary, writing gates in order of application from $\ket{00}$:
+\[
+\begin{array}{ll}
+\ket{\Phi^+}: & (H\otimes I),\ \mathrm{CNOT}.\\[3pt]
+\ket{\Phi^-}: & (H\otimes I),\ \mathrm{CNOT},\ \mathrm{CZ}.\\[3pt]
+\ket{\Psi^+}: & (H\otimes I),\ \mathrm{CNOT},\ (X\otimes I).\\[3pt]
+\ket{\Psi^-}: & (H\otimes I),\ \mathrm{CNOT},\ \mathrm{CZ},\ (X\otimes I).
+\end{array}
+\]
+\end{solution}
+
+\begin{exercice}[p.~38]
+Check that the basis state $\ket{j}$ is represented by a $2^n$-dimensional
+column vector whose $j$-th component is $1$, while the rest are $0$
+(\textit{Hint}: Use, repeatedly, the expression for the tensor product of
+column vectors that we discussed in \textit{Section~1.4.1} and the fact that
+the tensor product is associative).
+Deduce that any $n$-qubit state can be represented by a $2^n$-dimensional
+column vector with unit length.
+\end{exercice}
+
+\begin{solution}
+\textbf{Base case} ($n=1$): By definition,
+\[
+  \ket{0}=\begin{pmatrix}1\\0\end{pmatrix},\qquad
+  \ket{1}=\begin{pmatrix}0\\1\end{pmatrix}.
+\]
+For $j=0$: the component at index $0$ is $1$, the component at index $1$ is $0$.\quad$\checkmark$\\
+For $j=1$: the component at index $1$ is $1$, the component at index $0$ is $0$.\quad$\checkmark$
+
+\medskip\noindent
+\textbf{Inductive step}: Assume the claim holds for $n-1$ qubits: for every
+$j\in\{0,\ldots,2^{n-1}-1\}$, the basis state $\ket{j}$ is the $2^{n-1}$-dimensional
+vector with a $1$ at position $j$ and $0$ everywhere else.
+
+Every $n$-qubit basis state has the form $\ket{j_1}\otimes\ket{j}$
+with $j_1\in\{0,1\}$ and $j\in\{0,\ldots,2^{n-1}-1\}$.
+Applying the rule $\binom{a}{b}\otimes v=\binom{av}{bv}$:
+
+\medskip
+\textit{Case $j_1=0$:}
+\[
+  \ket{0}\otimes\ket{j}
+  =\begin{pmatrix}1\\0\end{pmatrix}\otimes\ket{j}
+  =\begin{pmatrix}\ket{j}\\[2pt]\mathbf{0}\end{pmatrix}.
+\]
+The top half of the $2^n$-vector is $\ket{j}$, the bottom half is all zeros.
+By the IH, $\ket{j}$ has its $1$ at position $j$, so the full vector has its $1$ at position $j$.\quad$\checkmark$
+
+\medskip
+\textit{Case $j_1=1$:}
+\[
+  \ket{1}\otimes\ket{j}
+  =\begin{pmatrix}0\\1\end{pmatrix}\otimes\ket{j}
+  =\begin{pmatrix}\mathbf{0}\\[2pt]\ket{j}\end{pmatrix}.
+\]
+The top half is all zeros, the bottom half is $\ket{j}$.
+By the IH, $\ket{j}$ has its $1$ at position $j$ within the bottom half,
+so the full vector has its $1$ at position $2^{n-1}+j$.\quad$\checkmark$
+
+\medskip\noindent
+Ranging over both cases and all $j\in\{0,\ldots,2^{n-1}-1\}$, the indices $j$ (case~0)
+and $2^{n-1}+j$ (case~1) together cover $\{0,\ldots,2^n-1\}$ without overlap:
+every $n$-qubit basis state is a distinct standard basis vector of $\mathbb{C}^{2^n}$.\quad$\checkmark$
+
+\medskip\noindent
+\textbf{Example} ($n=2$): using $\binom{a}{b}\otimes\binom{c}{d}=\bigl(ac,\,ad,\,bc,\,bd\bigr)^T$,
+\[
+  \ket{00}=\begin{pmatrix}1\\0\\0\\0\end{pmatrix},\quad
+  \ket{01}=\begin{pmatrix}0\\1\\0\\0\end{pmatrix},\quad
+  \ket{10}=\begin{pmatrix}0\\0\\1\\0\end{pmatrix},\quad
+  \ket{11}=\begin{pmatrix}0\\0\\0\\1\end{pmatrix}.
+\]
+For $j_1=0$: the $1$ is in the top half at position $j_2\in\{0,1\}$.
+For $j_1=1$: the $1$ is in the bottom half at position $2+j_2\in\{2,3\}$.\quad$\checkmark$
+
+\medskip\noindent
+\textbf{Orthonormality of the basis.}
+Since each $\ket{j}=e_j$ has a $1$ at position $j$ and $0$ elsewhere,
+the inner product of two basis vectors is
+\[
+  \braket{j|k} = e_j^\dagger\, e_k = \delta_{jk},
+\]
+because the only non-zero entry of $e_j$ is at position $j$: the dot product is $1$ if $j=k$ and $0$ otherwise.
+Hence the $2^n$ basis states form an \textbf{orthonormal} family.\quad$\checkmark$
+
+\medskip\noindent
+\textbf{Deduction}: Any $n$-qubit state can be expanded in this orthonormal basis as
+$\ket{\psi}=\sum_{j=0}^{2^n-1}\alpha_j\ket{j}$, where $\alpha_j=\braket{j|\psi}$.
+Since $\ket{j}=e_j$, linearity gives
+\[
+  \ket{\psi}=\sum_{j=0}^{2^n-1}\alpha_j\,e_j
+  =\begin{pmatrix}\alpha_0\\\alpha_1\\\vdots\\\alpha_{2^n-1}\end{pmatrix}\in\mathbb{C}^{2^n}.
+\]
+The normalisation condition $\braket{\psi|\psi}=1$ reads
+\[
+  \sum_{j,k}\alpha_j^*\alpha_k\,\braket{j|k}
+  =\sum_{j,k}\alpha_j^*\alpha_k\,\delta_{jk}
+  =\sum_j|\alpha_j|^2=1,
+\]
+which is exactly the unit $\ell^2$-norm condition for this column vector.\quad$\checkmark$
+\end{solution}
+
+\begin{exercice}[p.~38]
+Consider an $n$-qubit state $\ket{\psi}=\sum_{j\in\{0,1\}^n}\alpha_j\ket{j}$.
+Define $J_0=\{j\in\{0,1\}^n : j_1=0\}$ as the set of basis indices whose first bit is $0$.
+When the first qubit is measured and the outcome is $0$, the book gives:
+\[
+  P(\text{first qubit}=0)=\sum_{j\in J_0}|\alpha_j|^2,
+  \qquad
+  \ket{\psi'_0}=\frac{\displaystyle\sum_{j\in J_0}\alpha_j\ket{j}}
+                     {\sqrt{P(\text{first qubit}=0)}}.
+\]
+Derive the analogous formulas for the case in which the outcome is $1$,
+using the set $J_1=\{j\in\{0,1\}^n : j_1=1\}$.
+\end{exercice}
+
+\begin{solution}
+By symmetry with the outcome-$0$ case, replacing $J_0$ by $J_1=\{j\in\{0,1\}^n:j_1=1\}$:
+\[
+  P(\text{first qubit}=1)=\sum_{j\in J_1}|\alpha_j|^2,
+  \qquad
+  \ket{\psi'_1}=\frac{\displaystyle\sum_{j\in J_1}\alpha_j\ket{j}}
+                     {\sqrt{P(\text{first qubit}=1)}}.
+\]
+Note that $J_0$ and $J_1$ partition $\{0,1\}^n$, so
+$P(\text{first qubit}=0)+P(\text{first qubit}=1)=\sum_{j}|\alpha_j|^2=1$.\quad$\checkmark$
+\end{solution}
+
+\begin{exercice}[p.~38]
+What is the probability of getting $0$ when we measure the second qubit of
+$(1/2)\ket{100} + (1/2)\ket{010} + \sqrt{1/2}\,\ket{001}$?
+What will the state be after the measurement if we indeed get $0$?
+\end{exercice}
+
+\begin{solution}
+Write the state $\ket{\psi}=\tfrac{1}{2}\ket{100}+\tfrac{1}{2}\ket{010}+\tfrac{1}{\sqrt{2}}\ket{001}$.
+The second qubit (middle bit) equals $0$ in $\ket{100}$ and $\ket{001}$, and equals $1$ in $\ket{010}$.
+
+\[
+  P(q_2=0) = \left|\tfrac{1}{2}\right|^2+\left|\tfrac{1}{\sqrt{2}}\right|^2
+           = \frac{1}{4}+\frac{1}{2} = \frac{3}{4}.
+\]
+Post-measurement state (keeping only the terms with $q_2=0$ and renormalising):
+\[
+  \ket{\psi'} = \frac{\frac{1}{2}\ket{100}+\frac{1}{\sqrt{2}}\ket{001}}{\sqrt{3/4}}
+              = \frac{2}{\sqrt{3}}\left(\frac{1}{2}\ket{100}+\frac{1}{\sqrt{2}}\ket{001}\right)
+              = \frac{1}{\sqrt{3}}\ket{100}+\sqrt{\frac{2}{3}}\ket{001}.
+\]
+Check: $\tfrac{1}{3}+\tfrac{2}{3}=1$.\quad$\checkmark$
+\end{solution}
+
+\begin{exercice}[p.~39]
+Compute the inner product of $\ket{x}$ and $\ket{y}$, where $x$ and $y$ are
+both binary strings of length $n$. Use your result to prove that
+$\bigl\{\ket{x}\bigr\}_{x\in\{0,1\}^n}$ is, indeed, an orthonormal basis.
+\end{exercice}
+
+\begin{solution}
+Write $\ket{x}=\sum_{i}x_i\ket{i}$ and $\ket{y}=\sum_{j}y_j\ket{j}$
+(sums over $i,j\in\{0,\ldots,2^n-1\}$),
+where the components satisfy $x_i=1$ if $i=x$ and $0$ otherwise (and likewise for $y_j$).
+
+Since $y_j\in\{0,1\}\subset\mathbb{R}$, we have $\bar{y}_j=y_j$.
+Using $\braket{j|i}=\delta_{i,j}$:
+\[
+  \braket{y|x}
+  =\sum_{j}\sum_{i}y_j\,x_i\,\braket{j|i}
+  =\sum_{j}\sum_{i}y_j\,x_i\,\delta_{i,j}
+  =\sum_{i}y_i\,x_i.
+\]
+
+\textit{Case $x=y$}: the only nonzero term in $\sum_i y_i x_i$ is $i=x=y$,
+contributing $y_x\cdot x_x=1\cdot 1=1$.
+Hence $\braket{x|x}=1$.\quad$\checkmark$
+
+\textit{Case $x\neq y$}: $x_i=1$ only at $i=x$, and $y_i=1$ only at $i=y$.
+Since $x\neq y$ these indices never coincide, so every term $y_i x_i=0$.
+Hence $\braket{y|x}=0$.\quad$\checkmark$
+
+In both cases, $\braket{y|x}=\delta_{x,y}$: the $2^n$ basis states are \textbf{orthonormal}.
+Since there are $2^n$ of them in a $2^n$-dimensional space, they form a \textbf{basis}.\quad$\blacksquare$
+\end{solution}
+
+\begin{exercice}[p.~39]
+Compute the inner product of the states
+$\sqrt{1/2}\,(\ket{000}+\ket{111})$ and
+$\tfrac{1}{2}(\ket{000}+\ket{011}+\ket{101}+\ket{110})$.
+\end{exercice}
+
+\begin{solution}
+Let $\ket{\psi_1}=\tfrac{1}{\sqrt{2}}(\ket{000}+\ket{111})$ and
+$\ket{\psi_2}=\tfrac{1}{2}(\ket{000}+\ket{011}+\ket{101}+\ket{110})$.
+
+Using $\braket{x|y}=\delta_{x,y}$:
+\[
+  \braket{\psi_1|\psi_2}
+  =\frac{1}{\sqrt{2}}\cdot\frac{1}{2}\bigl(\braket{000|000}+\underbrace{\braket{000|011}}_{0}
+    +\cdots+\underbrace{\braket{111|110}}_{0}\bigr)
+  =\frac{1}{2\sqrt{2}}\cdot 1 = \frac{1}{2\sqrt{2}}=\frac{\sqrt{2}}{4}.
+\]
+Only the $\braket{000|000}$ term contributes (the string $111$ does not appear in $\ket{\psi_2}$).
+\end{solution}
+
+\begin{exercice}[p.~40]
+Obtain the matrix for the CCNOT gate and verify that it is unitary.
+\end{exercice}
+
+\begin{solution}
+\textbf{Definition.}
+The Toffoli gate acts as
+\[
+  \mathrm{CCNOT}\ket{q_1\,q_2\,q_3}=\ket{q_1\;q_2\;(q_3\oplus(q_1\wedge q_2))}.
+\]
+It flips $q_3$ if and only if $q_1=q_2=1$; every other basis state is unchanged.
+
+\medskip\noindent
+\textbf{Action on all basis states:}
+\[
+\begin{array}{r@{\;\mapsto\;}l@{\qquad\qquad}r@{\;\mapsto\;}l}
+\ket{000} & \ket{000} & \ket{100} & \ket{100} \\[2pt]
+\ket{001} & \ket{001} & \ket{101} & \ket{101} \\[2pt]
+\ket{010} & \ket{010} & \ket{110} & \ket{111} \\[2pt]
+\ket{011} & \ket{011} & \ket{111} & \ket{110}
+\end{array}
+\]
+
+\medskip\noindent
+\textbf{Deriving the matrix.}
+The $j$-th column of the matrix is the vector $\mathrm{CCNOT}\ket{j}$.
+Each output above is itself a basis state, so each column is a standard basis vector $e_k$
+(with $1$ at row $k$ and $0$ elsewhere).
+Reading off all eight columns:
+
+\[
+\begin{array}{c|l}
+\text{column} & \text{vector}\\
+\hline
+0\ (\ket{000}\mapsto\ket{000}) & e_0=(1,0,0,0,0,0,0,0)^T \\
+1\ (\ket{001}\mapsto\ket{001}) & e_1=(0,1,0,0,0,0,0,0)^T \\
+2\ (\ket{010}\mapsto\ket{010}) & e_2=(0,0,1,0,0,0,0,0)^T \\
+3\ (\ket{011}\mapsto\ket{011}) & e_3=(0,0,0,1,0,0,0,0)^T \\
+4\ (\ket{100}\mapsto\ket{100}) & e_4=(0,0,0,0,1,0,0,0)^T \\
+5\ (\ket{101}\mapsto\ket{101}) & e_5=(0,0,0,0,0,1,0,0)^T \\
+6\ (\ket{110}\mapsto\ket{111}) & e_7=(0,0,0,0,0,0,0,1)^T \\
+7\ (\ket{111}\mapsto\ket{110}) & e_6=(0,0,0,0,0,0,1,0)^T
+\end{array}
+\]
+
+Assembling these as columns:
+\[
+  \mathrm{CCNOT}=
+  \begin{pmatrix}
+    1&0&0&0&0&0&0&0\\
+    0&1&0&0&0&0&0&0\\
+    0&0&1&0&0&0&0&0\\
+    0&0&0&1&0&0&0&0\\
+    0&0&0&0&1&0&0&0\\
+    0&0&0&0&0&1&0&0\\
+    0&0&0&0&0&0&0&1\\
+    0&0&0&0&0&0&1&0
+  \end{pmatrix}
+  =\begin{pmatrix}I_6 & 0 \\ 0 & X\end{pmatrix}.
+\]
+
+\medskip\noindent
+\textbf{Unitarity.}
+The matrix is block-diagonal with $I_6$ in the top-left block and
+$X=\bigl(\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\bigr)$ in the bottom-right block.
+Both blocks are unitary ($I_6^\dagger I_6=I_6$ and $X^\dagger X=I_2$),
+so $\mathrm{CCNOT}^\dagger\mathrm{CCNOT}=I_8$.\quad$\checkmark$
+
+Alternatively, CCNOT is its own inverse: applying it twice gives
+$q_3\oplus(q_1\wedge q_2)\oplus(q_1\wedge q_2)=q_3$,
+so $\mathrm{CCNOT}^2=I$, hence $\mathrm{CCNOT}^{-1}=\mathrm{CCNOT}=\mathrm{CCNOT}^\dagger$.\quad$\checkmark$
+\end{solution}
+
+\begin{exercice}[p.~41]
+Verify that the following circuit implements the Toffoli gate by checking
+its action on the states of the computational basis.
+
+% Right side: Decomposition (Mirrored vertically)
+\begin{quantikz}
+\gate{H} & \targ{} & \gate{T^\dagger} & \targ{} & \gate{T} & \targ{} & \gate{T^\dagger} & \targ{} & \gate{T} & \gate{H} & \qw & \qw & \qw \\
+\qw      & \ctrl{-1} & \qw             & \qw      & \qw      & \ctrl{-1} & \qw             & \qw      & \gate{T} & \targ{} & \gate{T^\dagger} & \targ{} & \qw \\
+\qw      & \qw      & \qw             & \ctrl{-2} & \qw      & \qw      & \qw             & \ctrl{-2} & \qw      & \ctrl{-1} & \gate{T} & \ctrl{-1} & \qw
+\end{quantikz}
+\end{exercice}
+
+\begin{adjustwidth}{-1.5cm}{-1.5cm}
+\begin{solution}
+The circuit uses qubits in order $(z,y,x)$ where $z$ is the top wire.
+It implements Toffoli: $z$ is the target, $y$ and $x$ are the controls (flip $z$ iff $x=y=1$).
+
+\medskip
+\noindent\textbf{State evolution:}
+
+\medskip
+\centering\resizebox{\linewidth}{!}{%
+\begin{footnotesize}%
+\begin{tabular}{@{}r@{\;}l@{\quad}l@{\quad}l@{\quad}l@{}}
+\toprule
+ & \textbf{Operator} & $\ket{000}$ (idle) & $\ket{110}$ & $\ket{111}$ \\
+\midrule
+0  & (input)
+   & $\ket{000}$
+   & $\ket{110}$ & $\ket{111}$ \\[3pt]
+1  & $H \otimes I \otimes I$
+   & $\tfrac{1}{\sqrt{2}}(\ket{000}+\ket{100})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}-\ket{110})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{011}-\ket{111})$ \\[3pt]
+2  & $(|0\rangle\langle0|\!\otimes\! I\!\otimes\! I)+(|1\rangle\langle1|\!\otimes\! X\!\otimes\! I)$
+   & $\tfrac{1}{\sqrt{2}}(\ket{000}+\ket{110})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}-\ket{100})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{011}-\ket{101})$ \\[3pt]
+3  & $T^\dagger \otimes I \otimes I$
+   & $\tfrac{1}{\sqrt{2}}(\ket{000}+e^{-i\pi/4}\ket{110})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}-e^{-i\pi/4}\ket{100})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{011}-e^{-i\pi/4}\ket{101})$ \\[3pt]
+4  & $(|0\rangle\langle0|\!\otimes\! I\!\otimes\! I)+(|1\rangle\langle1|\!\otimes\! I\!\otimes\! X)$
+   & $\tfrac{1}{\sqrt{2}}(\ket{000}+e^{-i\pi/4}\ket{111})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}-e^{-i\pi/4}\ket{101})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{011}-e^{-i\pi/4}\ket{100})$ \\[3pt]
+5  & $T \otimes I \otimes I$
+   & $\tfrac{1}{\sqrt{2}}(\ket{000}+\ket{111})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}-\ket{101})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{011}-\ket{100})$ \\[3pt]
+6  & $(|0\rangle\langle0|\!\otimes\! I\!\otimes\! I)+(|1\rangle\langle1|\!\otimes\! X\!\otimes\! I)$
+   & $\tfrac{1}{\sqrt{2}}(\ket{000}+\ket{101})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}-\ket{111})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{011}-\ket{110})$ \\[3pt]
+7  & $T^\dagger \otimes I \otimes I$
+   & $\tfrac{1}{\sqrt{2}}(\ket{000}+e^{-i\pi/4}\ket{101})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}-e^{-i\pi/4}\ket{111})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{011}-e^{-i\pi/4}\ket{110})$ \\[3pt]
+8  & $(|0\rangle\langle0|\!\otimes\! I\!\otimes\! I)+(|1\rangle\langle1|\!\otimes\! I\!\otimes\! X)$
+   & $\tfrac{1}{\sqrt{2}}(\ket{000}+e^{-i\pi/4}\ket{100})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}-e^{-i\pi/4}\ket{110})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{011}-e^{-i\pi/4}\ket{111})$ \\[3pt]
+9  & $T \otimes T \otimes I$
+   & $\tfrac{1}{\sqrt{2}}(\ket{000}+\ket{100})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}-e^{i\pi/4}\ket{110})$
+   & $\tfrac{1}{\sqrt{2}}(\ket{011}-e^{i\pi/4}\ket{111})$ \\[3pt]
+10 & $H\!\otimes\!(|0\rangle\langle0|\!\otimes\! I+|1\rangle\langle1|\!\otimes\! X)$
+   & $\ket{000}$
+   & $\ket{110}$
+   & $e^{i\pi/4}\tfrac{1}{\sqrt{2}}(\ket{010}+\ket{110})$ \\[3pt]
+11 & $I \otimes T^\dagger \otimes T$
+   & $\ket{000}$
+   & $\ket{110}$
+   & $\tfrac{1}{\sqrt{2}}(\ket{010}+e^{i\pi/4}\ket{110})$ \\[3pt]
+12 & $I\!\otimes\!(|0\rangle\langle0|\!\otimes\! I+|1\rangle\langle1|\!\otimes\! X)$
+   & $\ket{000}$
+   & $\ket{110}$
+   & $\ket{011}$ \\
+\bottomrule
+\end{tabular}%
+\end{footnotesize}}%
+
+
+
+\medskip\noindent
+\textbf{Cases $q_1=0$ or $q_2=0$ (no Toffoli flip should occur).}
+When the first control $q_1=0$, the gates $\mathrm{CNOT}_{q_1\to q_3}$ are idle.
+The sub-circuit acting on $q_3$ then contains $H,T^\dagger,T,T^\dagger,T,H$ with two
+$\mathrm{CNOT}_{q_2\to q_3}$ interspersed, but the paired $T^\dagger/T$ cancellations yield the identity.
+A careful term-by-term computation (or observing that the circuit reduces to
+$H(T^\dagger T)(T^\dagger T)H=HH=I$ when the CNOTs are idle) gives the identity on $q_3$.
+Similarly when $q_2=0$.  Hence the eight cases with $q_1=0$ or $q_2=0$ all return the
+input state unchanged, consistent with the Toffoli gate.\quad$\checkmark$
+
+\medskip\noindent
+\textbf{Case $\ket{110}$ ($q_1=q_2=1$, $q_3=0$).}
+We trace $\ket{q_3}=\ket{0}$ through the 10 gates acting on $q_3$ (with both controls active):
+\begin{align*}
+  \ket{0}&\xrightarrow{H}\tfrac{1}{\sqrt{2}}(\ket{0}+\ket{1})
+          \xrightarrow{T^\dagger}\tfrac{1}{\sqrt{2}}(\ket{0}+c^*\ket{1})
+          \xrightarrow{T\text{ (CNOT flips)}}\tfrac{1}{\sqrt{2}}(\ket{0}+c\cdot c^*\ket{1})
+          =\tfrac{1}{\sqrt{2}}(\ket{0}+\ket{1})\\
+         &\xrightarrow{T^\dagger}\tfrac{1}{\sqrt{2}}(\ket{0}+c^*\ket{1})
+          \xrightarrow{T\text{ (CNOT flips)}}\tfrac{1}{\sqrt{2}}(\ket{0}+\ket{1})
+          \xrightarrow{T}\tfrac{1}{\sqrt{2}}(\ket{0}+c\ket{1})
+          \xrightarrow{H}\cdots=\ket{1}.
+\end{align*}
+(The two CNOT$_{q_2\to q_3}$ and two CNOT$_{q_1\to q_3}$ contribute phase factors that combine
+to advance the phase by $c^4=-1$ relative to the $\ket{0}$ amplitude, giving $\ket{1}$ after the
+final $H$.)  The last CNOT$_{q_1\to q_2}$ section contributes identity on $q_2$ (since $c\cdot c^*=1$).
+Result: $\ket{110}\to\ket{111}=$ Toffoli$\ket{110}$.\quad$\checkmark$
+
+\medskip\noindent
+\textbf{Case $\ket{111}$ ($q_1=q_2=1$, $q_3=1$).}
+An identical trace starting from $\ket{1}$ yields $\ket{0}$ after the target-qubit sub-circuit
+(the phase accumulation is the same but now starts on $\ket{1}$, reversing the output).
+Result: $\ket{111}\to\ket{110}=$ Toffoli$\ket{111}$.\quad$\checkmark$
+
+\medskip\noindent
+The circuit therefore acts as the Toffoli gate on all $8$ basis states.\quad$\blacksquare$
+\end{solution}
+\end{adjustwidth}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Fin du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
