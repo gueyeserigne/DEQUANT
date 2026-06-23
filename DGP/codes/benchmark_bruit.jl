@@ -4,10 +4,12 @@ using Plots, StatsPlots
 Random.seed!(42)
 const MOI = JuMP.MOI
 
+#pour lancer le programme avec du bruit sur les distances faire  BRUIT_DIST_ONLY=1 julia benchmark_bruit.jl
 # ═══════════════════════════════════════════════════════════════
 #  §1  PARAMÈTRES
 # ═══════════════════════════════════════════════════════════════
-n_values = [4,10,30,50]
+const _bruit_only = get(ENV, "BRUIT_DIST_ONLY", "0") == "1"
+n_values = _bruit_only ? [4,10] : [4,10] # preciser la valeur des instances à tester avec bruit dans la premiere liste sans bruit dans la deuxieme 
 dim      = 2
 c6       = 1.0
 d_min    = 0.2
@@ -133,6 +135,15 @@ function ajouter_bruit(Q, theta_bruit, n)
         Q_bruit[j,i] = Q_bruit[i,j]
     end
     return Q_bruit
+end
+
+function Q_bruit_dist(n, c6, L)
+    Q = zeros(n, n)
+    for i in 1:n, j in i+1:n
+        d = rand() * L 
+        Q[i,j] = Q[j,i] = c6 / d^6
+    end
+    return Q
 end
 
 # ═══════════════════════════════════════════════════════════════
@@ -538,6 +549,52 @@ function run_benchmark(n_values, dim, c6; formulations::Vector{String}=["Standar
     return df
 end
 
+COULEURS = Dict(
+    "Standard"    => :steelblue,
+    "Reformulee"  => :darkorange,
+    "Polaire"     => :seagreen,
+    "Surogate"    => :mediumpurple,
+    "Quadratique" => :goldenrod,
+    "MDS_Exact"   => :crimson
+)
+FORMS_NLP = ["Standard", "Reformulee", "Polaire", "Surogate", "Quadratique"]
+FORMS_ALL = ["Standard", "Reformulee", "Polaire", "Surogate", "Quadratique", "MDS_Exact"]
+LABELS_NLP = ["Standard", "Reformulée", "Polaire", "Surogate", "Quadratique"]
+LABELS_ALL = ["Standard", "Reformulée", "Polaire", "Surogate", "Quadratique", "MDS Exact"]
+LINE_STYLES_NLP = [:solid, :dash, :dot, :dashdot, :dashdotdot]
+
+safe(x) = isinf(x) || isnan(x) ? NaN : x
+
+function positive_finite_values(series_list)
+    vals = Float64[]
+    for series in series_list
+        append!(vals, filter(x -> isfinite(x) && x > 0, series))
+    end
+    return vals
+end
+
+function get_ry(df, n, L_type, strategy, form)
+    rows = filter(r -> r.n == n && r.L_type == L_type &&
+                       r.strategy == strategy && r.formulation == form,
+                  eachrow(df))
+    isempty(rows) ? NaN : safe(first(rows).obj_rydberg)
+end
+
+function get_time(df, n, L_type, strategy, form)
+    rows = filter(r -> r.n == n && r.L_type == L_type &&
+                       r.strategy == strategy && r.formulation == form,
+                  eachrow(df))
+    isempty(rows) ? NaN : first(rows).time_s
+end
+
+function get_rmse(df, n, L_type, strategy, form)
+    rows = filter(r -> r.n == n && r.L_type == L_type &&
+                       r.strategy == strategy && r.formulation == form,
+                  eachrow(df))
+    isempty(rows) ? NaN : safe(first(rows).rmse_dist)
+end
+
+if !_bruit_only
 const bench_results = run_benchmark(n_values, dim, c6)
 
 # ═══════════════════════════════════════════════════════════════
@@ -571,52 +628,7 @@ println("═"^70)
 # ═══════════════════════════════════════════════════════════════
 println("\nGénération des graphiques...")
 
-COULEURS = Dict(
-    "Standard"    => :steelblue,
-    "Reformulee"  => :darkorange,
-    "Polaire"     => :seagreen,
-    "Surogate"    => :mediumpurple,
-    "Quadratique" => :goldenrod,
-    "MDS_Exact"   => :crimson
-)
-FORMS_NLP = ["Standard", "Reformulee", "Polaire", "Surogate", "Quadratique"]
-FORMS_ALL = ["Standard", "Reformulee", "Polaire", "Surogate", "Quadratique", "MDS_Exact"]
-LABELS_NLP = ["Standard", "Reformulée", "Polaire", "Surogate", "Quadratique"]
-LABELS_ALL = ["Standard", "Reformulée", "Polaire", "Surogate", "Quadratique", "MDS Exact"]
-LINE_STYLES_NLP = [:solid, :dash, :dot, :dashdot, :dashdotdot]
 n_str = string.(n_values)
-
-safe(x) = isinf(x) || isnan(x) ? NaN : x
-
-function positive_finite_values(series_list)
-    vals = Float64[]
-    for series in series_list
-        append!(vals, filter(x -> isfinite(x) && x > 0, series))
-    end
-    return vals
-end
-
-# Fonction utilitaire de recherche dans le DataFrame
-function get_ry(df, n, L_type, strategy, form)
-    rows = filter(r -> r.n == n && r.L_type == L_type &&
-                       r.strategy == strategy && r.formulation == form,
-                  eachrow(df))
-    isempty(rows) ? NaN : safe(first(rows).obj_rydberg)
-end
-
-function get_time(df, n, L_type, strategy, form)
-    rows = filter(r -> r.n == n && r.L_type == L_type &&
-                       r.strategy == strategy && r.formulation == form,
-                  eachrow(df))
-    isempty(rows) ? NaN : first(rows).time_s
-end
-
-function get_rmse(df, n, L_type, strategy, form)
-    rows = filter(r -> r.n == n && r.L_type == L_type &&
-                       r.strategy == strategy && r.formulation == form,
-                  eachrow(df))
-    isempty(rows) ? NaN : safe(first(rows).rmse_dist)
-end
 
 # ─── Plot 1 : Erreur Rydberg — multistart, L fixe ───────────────────────────
 series_p1 = [
@@ -858,14 +870,15 @@ fig_rmse_path = joinpath(@__DIR__, "benchmark_rmse_dist.png")
 savefig(fig_rmse, fig_rmse_path)
 println("Graphique RMSE sauvegardé : $fig_rmse_path")
 display(fig_rmse)
+end  # !_bruit_only
 
 # ═══════════════════════════════════════════════════════════════
-#  §11  BENCHMARK AVEC BRUIT
-#  Seul ajout : on reboucle sur les mêmes n et formulations
-#  mais avec Q bruité. x_inits régénérés pour chaque theta_bruit.
+#  §11  BENCHMARK AVEC Q_bruit_dist
+#  Q généré par distances aléatoires dans [0, L] (pas de x vrai).
+#  Métrique principale : err_vs_bruit (ajustement à Q_bruit_dist).
 # ═══════════════════════════════════════════════════════════════
 println("\n\n" * "═"^70)
-println("  BENCHMARK AVEC BRUIT — robustesse des formulations")
+println("  BENCHMARK Q_bruit_dist — distances aléatoires dans [0, L]")
 println("═"^70)
 
 bruit_niveaux = [0.0]
@@ -898,13 +911,10 @@ nlp_forms_bruit = [
 for n in n_values
     for L_type in ALL_L_TYPES
         if L_type == "L_optimal"
-            x_vrais   = generer_init(n, dim, L_SEED)
-            Q_parfait = build_Q_matrix(x_vrais, c6, n)
-            L_bruit   = L_optimal_from_Q(Q_parfait, c6, n)
+            Q_temp  = Q_bruit_dist(n, c6, L_SEED)
+            L_bruit = L_optimal_from_Q(Q_temp, c6, n)
         else
-            L_bruit   = L_value(L_type, n; c6=c6)
-            x_vrais   = generer_init(n, dim, L_bruit)
-            Q_parfait = build_Q_matrix(x_vrais, c6, n)
+            L_bruit = L_value(L_type, n; c6=c6)
         end
 
         println("\n" * "═"^62)
@@ -912,31 +922,30 @@ for n in n_values
         println("═"^62)
 
         for theta_bruit in bruit_niveaux
-            @printf("\n  ── theta_bruit = %.0f%% ──\n", theta_bruit * 100)
+            @printf("\n  ── Q_bruit_dist ──\n")
 
-            Q_bruit = ajouter_bruit(Q_parfait, theta_bruit, n)
+            Q_bruit = Q_bruit_dist(n, c6, L_bruit)
+            if L_type == "L_optimal"
+                L_bruit = L_optimal_from_Q(Q_bruit, c6, n)
+            end
             Q_str = matrix_to_csv_str(Q_bruit)
-            X_str = matrix_to_csv_str(x_vrais)
+            X_str = ""
 
-            # x_inits régénérés pour chaque theta_bruit (pas de biais)
             n_rs           = nb_restarts_bench(n)
             x_inits_shared = [generer_init(n, dim, L_bruit) for _ in 1:n_rs]
 
-            # MDS sur Q bruité
+            # MDS sur Q_bruit_dist
             t_mds = @elapsed begin
                 _, x_mds = solve_mds(n, dim, Q_bruit, c6)
             end
-            ev_mds = erreur_rydberg_vraie(x_mds, Q_parfait, c6, n, dim)
-            eb_mds = erreur_rydberg_vraie(x_mds, Q_bruit,   c6, n, dim)
-            rmse_mds = rmse_dist_safe(x_mds, x_vrais, n)
-            @printf("    [%-12s] err_vrai=%+.3e  err_bruit=%+.3e  rmse_dist=%.4e  t=%.4fs\n",
-                    "MDS_Exact", ev_mds, eb_mds, rmse_mds, t_mds)
+            eb_mds = erreur_rydberg_vraie(x_mds, Q_bruit, c6, n, dim)
+            @printf("    [%-12s] err_bruit=%+.3e  t=%.4fs\n",
+                    "MDS_Exact", eb_mds, t_mds)
             x_opt_str = matrix_to_csv_str(x_mds)
-            mds_positions[(n, L_type, theta_bruit)] = (copy(x_vrais), copy(x_mds))
             push!(df_bruit, (n, L_type, L_bruit, theta_bruit, "MDS_Exact",
-                             ev_mds, eb_mds, rmse_mds, t_mds, Q_str, X_str, x_opt_str))
+                             NaN, eb_mds, NaN, t_mds, Q_str, X_str, x_opt_str))
 
-            # NLP multistart sur Q bruité 
+            # NLP multistart sur Q_bruit_dist
             for (form_name, solver_fn) in nlp_forms_bruit
                 ry_bruit, stat_s, x_sol, t_s =
                     begin
@@ -953,13 +962,11 @@ for n in n_values
                         end
                         (br, bs, bx, time()-t0)
                     end
-                ry_vrai = erreur_rydberg_vraie(x_sol, Q_parfait, c6, n, dim)
-                rmse_s = rmse_dist_safe(x_sol, x_vrais, n)
-                @printf("    [%-12s] err_vrai=%+.3e  err_bruit=%+.3e  rmse_dist=%.4e  t=%.2fs  [%s]\n",
-                        form_name, ry_vrai, ry_bruit, rmse_s, t_s,
+                @printf("    [%-12s] err_bruit=%+.3e  t=%.2fs  [%s]\n",
+                        form_name, ry_bruit, t_s,
                         stat_s[1:min(20, length(stat_s))])
                 push!(df_bruit, (n, L_type, L_bruit, theta_bruit, form_name,
-                                 ry_vrai, ry_bruit, rmse_s, t_s, Q_str, X_str, ""))
+                                 NaN, ry_bruit, NaN, t_s, Q_str, X_str, ""))
             end
         end
     end
@@ -967,17 +974,17 @@ end
 
 # Tableau bruit final
 println("\n\n" * "═"^70)
-println("  IMPACT DU BRUIT — err_vs_Qvrai (qualité de reconstruction)")
+println("  Q_bruit_dist — err_vs_bruit (ajustement à Q aléatoire)")
 println("═"^70)
 for grp in groupby(df_bruit, [:n, :L_type, :sigma])
     r = grp[1,:]
     @printf("\n  n=%-3d  %s  theta_bruit=%.0f%%\n", r.n, r.L_type, r.sigma * 100)
-    min_ry = minimum(replace(grp.err_vs_vrai, Inf => 1e300))
+    min_ry = minimum(replace(grp.err_vs_bruit, Inf => 1e300))
     for row in eachrow(grp)
-        ry_cmp = isinf(row.err_vs_vrai) ? 1e300 : row.err_vs_vrai
+        ry_cmp = isinf(row.err_vs_bruit) ? 1e300 : row.err_vs_bruit
         marker = ry_cmp == min_ry ? " ← ★ MEILLEUR" : ""
-        @printf("    %-12s  err_vrai=%+.4e  rmse=%.4e%s\n",
-                row.formulation, row.err_vs_vrai, row.rmse_dist, marker)
+        @printf("    %-12s  err_bruit=%+.4e%s\n",
+                row.formulation, row.err_vs_bruit, marker)
     end
 end
 
@@ -1145,12 +1152,14 @@ function plot_mds_positions_grid(positions::Dict, sigma::Float64)
 end
 
 sigma_plot = first(bruit_niveaux)
-fig_mds_positions = plot_mds_positions_grid(mds_positions, sigma_plot)
+if !isempty(mds_positions)
+    fig_mds_positions = plot_mds_positions_grid(mds_positions, sigma_plot)
 
-path_mds_positions = joinpath(@__DIR__, "benchmark_positions_mds_exact.png")
-savefig(fig_mds_positions, path_mds_positions)
-println("Graphique positions MDS Exact sauvegardé : $path_mds_positions")
-display(fig_mds_positions)
+    path_mds_positions = joinpath(@__DIR__, "benchmark_positions_mds_exact.png")
+    savefig(fig_mds_positions, path_mds_positions)
+    println("Graphique positions MDS Exact sauvegardé : $path_mds_positions")
+    display(fig_mds_positions)
+end
 
 # ═══════════════════════════════════════════════════════════════
 #  §14  FONCTION START() — LANCEUR CONFIGURÉ
@@ -1214,9 +1223,8 @@ function start(;
 end
 
 # ─── LANCER LE BENCHMARK ───────────────────────────────────────
-# Configuration par défaut
 if abspath(PROGRAM_FILE) == @__FILE__
-    #start(n_vals=[3,10,20,50,100], formulations=["std", "reform", "pol", "mds"], L_types=ALL_L_TYPES, noise_levels=[0.0, 0.10, 0.20, 0.30])
-    start(n_vals=[1000], formulations=["mds"], L_types=ALL_L_TYPES, noise_levels=[0.99])
-
+    if !_bruit_only
+        start(n_vals=[1000], formulations=["mds"], L_types=ALL_L_TYPES, noise_levels=[0.99])
+    end
 end
