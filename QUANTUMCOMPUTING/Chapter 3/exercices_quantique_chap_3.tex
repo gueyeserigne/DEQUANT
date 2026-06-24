@@ -1,0 +1,612 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exercices — Informatique Quantique — Chapitre 3
+%% Stage LIA / CERI — Université d'Avignon
+%% Stagiaire : Patrice SEBASTIANO
+%% Encadrant : Serigne GUEYE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \documentclass[light]{ceri/sty/rapport}
+% \documentclass[handout]{ceri/sty/rapport}
+\documentclass{ceri/sty/rapport}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Informations générales
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\major{Master d'Informatique}
+\specialization{Informatique Quantique}
+\course{Stage de Recherche — LIA Avignon}
+
+\title{Exercices — Chapitre 3}
+\subtitle{Optimisation combinatoire quantique}
+
+\author{
+	Patrice SEBASTIANO
+}
+
+\advisor[Encadrant]{
+	Serigne GUEYE
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Packages supplémentaires
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ifthen}
+\usepackage{amsmath, amssymb}
+\usepackage{mathtools}
+\usepackage{braket}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins, listings}
+\usepackage{listings}
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries\color{blue!70!black},
+  stringstyle=\color{green!50!black},
+  commentstyle=\itshape\color{gray},
+  breaklines=true,
+  frame=none,
+  showstringspaces=false,
+}
+
+% Couleurs personnalisées
+\definecolor{exo-bg}{RGB}{230, 240, 255}
+\definecolor{exo-border}{RGB}{50, 100, 200}
+\definecolor{sol-bg}{RGB}{230, 255, 235}
+\definecolor{sol-border}{RGB}{40, 160, 60}
+
+% Dessin de graphes
+\usetikzlibrary{graphs, graphdrawing}
+\usegdlibrary{force}
+
+% Styles de noeuds pour les graphes Max-Cut
+% Tiny inline graph for exo 4 grid: args = style0, style1, style2, edge01-style, edge02-style
+\newcommand{\minigraph}[5]{%
+  \begin{tikzpicture}[scale=0.38, baseline=-4pt]
+    \node[#1, minimum size=12pt, font=\tiny] (n0) at (1, 1.6) {0};
+    \node[#2, minimum size=12pt, font=\tiny] (n1) at (0, 0)   {1};
+    \node[#3, minimum size=12pt, font=\tiny] (n2) at (2, 0)   {2};
+    \draw[#4] (n0)--(n1);
+    \draw[#5] (n0)--(n2);
+  \end{tikzpicture}%
+}
+% Grid cell: args = bitstring, graph command, value
+\newcommand{\gridcell}[3]{%
+  \begin{tabular}{@{}c@{}}
+    $\ket{#1}$ \\[2pt]
+    #2 \\[1pt]
+    $#3$
+  \end{tabular}%
+}
+
+\tikzset{
+  vertex/.style={circle, draw=gray!70, fill=gray!25, thick, minimum size=22pt, font=\bfseries\small},
+  vset1/.style={circle, draw=blue!70, fill=blue!20, thick, minimum size=22pt, font=\bfseries\small},
+  vset2/.style={circle, draw=red!70,  fill=red!20,  thick, minimum size=22pt, font=\bfseries\small},
+  cut edge/.style={dashed, thick, draw=black!60},
+  kept edge/.style={thick, draw=gray!60},
+}
+
+% Environnement exercice — argument optionnel = référence page du livre
+\newcounter{exercice}[section]
+\renewcommand{\theexercice}{\thesection.\arabic{exercice}}
+
+\newtcolorbox[use counter=exercice]{exercice}[1][]{%
+	colback=exo-bg,
+	colframe=exo-border,
+	fonttitle=\bfseries,
+	title={Exercice~\theexercice \ifthenelse{\equal{#1}{}}{}{~---~#1}},
+	breakable,
+	before upper={\parindent=1em}
+}
+
+\newtcolorbox{solution}{%
+	colback=sol-bg,
+	colframe=sol-border,
+	fonttitle=\bfseries,
+	title={Solution},
+	breakable,
+	before upper={\parindent=1em}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Début du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+\sloppy
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Exercices du Chapitre 3}
+\label{sec:chap3}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{exercice}[p.~86]
+The maximum cut in a graph doesn't need to be unique.
+Find a maximum cut for the graph in \emph{Figure~3.1} in which vertices $0$ and $1$ are
+in the same set.
+
+\medskip
+% Figure 3.1 : 5 sommets, 6 arêtes
+% Positions : 0 à gauche, 1 en haut-milieu, 2 en bas-milieu, 3 en haut-droite, 4 en bas-droite
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+  \node[vertex] (0) at (0,   1)   {0};
+  \node[vertex] (1) at (1.5, 2)   {1};
+  \node[vertex] (2) at (1.5, 0)   {2};
+  \node[vertex] (3) at (3,   2)   {3};
+  \node[vertex] (4) at (3,   0)   {4};
+  \draw[kept edge] (0)--(1);
+  \draw[kept edge] (0)--(2);
+  \draw[kept edge] (1)--(2);
+  \draw[kept edge] (1)--(3);
+  \draw[kept edge] (2)--(4);
+  \draw[kept edge] (3)--(4);
+\end{tikzpicture}
+
+\smallskip
+{\small\textit{Figure~3.1 — Graph with 5 vertices and 6 edges}}
+\end{center}
+\end{exercice}
+
+\begin{solution}
+We assign $S_1 = \{0, 1, 4\}$ (blue) and $S_2 = \{2, 3\}$ (red).
+The only non-cut edge is $(0,1)$; all other 5 edges cross the partition, giving a \textbf{maximum cut of size~5}.
+
+\medskip
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+  \node[vset1] (0) at (0,   1) {0};
+  \node[vset1] (1) at (1.5, 2) {1};
+  \node[vset2] (2) at (1.5, 0) {2};
+  \node[vset2] (3) at (3,   2) {3};
+  \node[vset1] (4) at (3,   0) {4};
+  \draw[kept edge] (0)--(1);
+  \draw[cut edge]  (0)--(2);
+  \draw[cut edge]  (1)--(2);
+  \draw[cut edge]  (1)--(3);
+  \draw[cut edge]  (2)--(4);
+  \draw[cut edge]  (3)--(4);
+  % legend
+  \node[vset1, minimum size=14pt] at (1.5,-1.1) {};
+  \node[anchor=west] at (1.75,-1.1) {\small $S_1 = \{0,1,4\}$};
+  \node[vset2, minimum size=14pt] at (1.5,-1.65) {};
+  \node[anchor=west] at (1.75,-1.65) {\small $S_2 = \{2,3\}$};
+  \draw[cut edge]  (0.8,-2.2)--(1.2,-2.2);
+  \node[anchor=west] at (1.25,-2.2) {\small cut edge (5 total)};
+  \draw[kept edge] (0.8,-2.7)--(1.2,-2.7);
+  \node[anchor=west] at (1.25,-2.7) {\small non-cut edge};
+\end{tikzpicture}
+\end{center}
+\end{solution}
+
+\begin{exercice}[p.~87]
+Write the Max-Cut problem for the graph in \emph{Figure~3.3} (six vertices $0$--$5$,
+edges $(0,1)$, $(0,2)$, $(1,2)$, $(1,4)$, $(2,3)$, $(3,4)$, $(3,5)$, $(4,5)$)
+as an optimization problem:
+\[
+  \text{Minimize} \quad \sum_{(j,k)\in E} z_j z_k,
+  \qquad \text{subject to } z_j \in \{-1, 1\}.
+\]
+
+\medskip
+\begin{center}
+\begin{tikzpicture}[scale=1.3]
+  \node[vertex] (0) at (0,   1)   {0};
+  \node[vertex] (1) at (1.5, 2)   {1};
+  \node[vertex] (2) at (1.5, 0)   {2};
+  \node[vertex] (3) at (3,   2)   {3};
+  \node[vertex] (4) at (3,   0)   {4};
+  \node[vertex] (5) at (4.5, 1)   {5};
+  \draw[kept edge] (0)--(1);
+  \draw[kept edge] (0)--(2);
+  \draw[kept edge] (1)--(2);
+  \draw[kept edge] (1)--(4);
+  \draw[kept edge] (2)--(3);
+  \draw[kept edge] (3)--(4);
+  \draw[kept edge] (3)--(5);
+  \draw[kept edge] (4)--(5);
+\end{tikzpicture}
+
+\smallskip
+{\small\textit{Figure~3.3 --- Graph with 6 vertices and 8 edges}}
+\end{center}
+
+What is the value of the function to be minimized when $z_0 = z_1 = z_2 = 1$ and $z_3 = z_4 = z_5 = -1$?
+Is it an optimal cut?
+\end{exercice}
+
+\begin{solution}
+\textbf{Formulation.}
+With $E = \{(0,1),(0,2),(1,2),(1,4),(2,3),(3,4),(3,5),(4,5)\}$ the objective is:
+\[
+  \text{Minimize} \quad
+  z_0 z_1 + z_0 z_2 + z_1 z_2 + z_1 z_4 + z_2 z_3 + z_3 z_4 + z_3 z_5 + z_4 z_5.
+\]
+
+\textbf{Evaluation at $z_0=z_1=z_2=1$, $z_3=z_4=z_5=-1$.}
+\[
+  \underbrace{z_0 z_1}_{+1} + \underbrace{z_0 z_2}_{+1} + \underbrace{z_1 z_2}_{+1}
+  + \underbrace{z_1 z_4}_{-1} + \underbrace{z_2 z_3}_{-1} + \underbrace{z_3 z_4}_{+1}
+  + \underbrace{z_3 z_5}_{+1} + \underbrace{z_4 z_5}_{+1} = \mathbf{4}.
+\]
+Only edges $(1,4)$ and $(2,3)$ are cut; the partition $\{0,1,2\}|\{3,4,5\}$ is not optimal.
+
+\textbf{Optimal cut.}
+We assign $S_1 = \{0, 3, 4\}$ (blue) and $S_2 = \{1, 2, 5\}$ (red),
+i.e.\ $z_0=z_3=z_4=+1$ and $z_1=z_2=z_5=-1$.
+Edges $(1,2)$ and $(3,4)$ stay within a set ($z_j z_k = +1$);
+the other 6 cross the partition ($z_j z_k = -1$):
+\[
+  \text{objective} = 2\times(+1) + 6\times(-1) = \mathbf{-4}.
+\]
+Since $-4 < 4$, this strictly improves on the proposed assignment,
+which is therefore \textbf{not optimal}.
+
+\medskip
+\begin{center}
+\begin{tikzpicture}[scale=1.3]
+  \node[vset1] (0) at (0,   1) {0};
+  \node[vset2] (1) at (1.5, 2) {1};
+  \node[vset2] (2) at (1.5, 0) {2};
+  \node[vset1] (3) at (3,   2) {3};
+  \node[vset1] (4) at (3,   0) {4};
+  \node[vset2] (5) at (4.5, 1) {5};
+  \draw[kept edge] (1)--(2);
+  \draw[kept edge] (3)--(4);
+  \draw[cut edge] (0)--(1);
+  \draw[cut edge] (0)--(2);
+  \draw[cut edge] (1)--(4);
+  \draw[cut edge] (2)--(3);
+  \draw[cut edge] (3)--(5);
+  \draw[cut edge] (4)--(5);
+  % legend
+  \node[vset1, minimum size=14pt] at (2.25,-1.1) {};
+  \node[anchor=west] at (2.5,-1.1) {\small $S_1 = \{0,3,4\}$};
+  \node[vset2, minimum size=14pt] at (2.25,-1.65) {};
+  \node[anchor=west] at (2.5,-1.65) {\small $S_2 = \{1,2,5\}$};
+  \draw[cut edge]  (1.3,-2.2)--(1.7,-2.2);
+  \node[anchor=west] at (1.75,-2.2) {\small cut edge (6)};
+  \draw[kept edge] (1.3,-2.7)--(1.7,-2.7);
+  \node[anchor=west] at (1.75,-2.7) {\small non-cut edge (2)};
+\end{tikzpicture}
+\end{center}
+\end{solution}
+
+\begin{exercice}[p.~93]
+Consider the graph below (three vertices, edges $(0,1)$ and $(0,2)$, no edge $(1,2)$).
+
+\medskip
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+  \node[vertex] (0) at (1.5, 2) {0};
+  \node[vertex] (1) at (0,   0) {1};
+  \node[vertex] (2) at (3,   0) {2};
+  \draw[kept edge] (0)--(1);
+  \draw[kept edge] (0)--(2);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+Compute
+\[
+  \langle 010 \mid (Z_0 Z_1 + Z_0 Z_2) \mid 010 \rangle
+  \quad \text{and} \quad
+  \langle 100 \mid (Z_0 Z_1 + Z_0 Z_2) \mid 100 \rangle.
+\]
+Does any of those states minimize $\langle x \mid (Z_0 Z_1 + Z_0 Z_2) \mid x \rangle$?
+\end{exercice}
+
+\begin{solution}
+For a computational basis state, $Z$ acts as $+1$ on $\ket{0}$ and $-1$ on $\ket{1}$,
+so the expectation value reduces to a product of eigenvalues along each edge.
+
+\medskip
+\textbf{State $\ket{010}$} — only edge $(0,1)$ is cut ($-1$), edge $(0,2)$ is not ($+1$):
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+  \node[vset1] (0) at (1.5, 2) {0};
+  \node[vset2] (1) at (0,   0) {1};
+  \node[vset1] (2) at (3,   0) {2};
+  \draw[cut edge]  (0)--(1);
+  \draw[kept edge] (0)--(2);
+\end{tikzpicture}
+\end{center}
+\[
+  \langle 010 \mid (Z_0 Z_1 + Z_0 Z_2) \mid 010 \rangle = -1 + 1 = \mathbf{0}.
+\]
+
+\medskip
+\textbf{State $\ket{100}$} — both edges $(0,1)$ and $(0,2)$ are cut ($-1$ each):
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+  \node[vset2] (0) at (1.5, 2) {0};
+  \node[vset1] (1) at (0,   0) {1};
+  \node[vset1] (2) at (3,   0) {2};
+  \draw[cut edge] (0)--(1);
+  \draw[cut edge] (0)--(2);
+\end{tikzpicture}
+\end{center}
+\[
+  \langle 100 \mid (Z_0 Z_1 + Z_0 Z_2) \mid 100 \rangle = -1 + (-1) = \mathbf{-2}.
+\]
+
+\textbf{Is $\ket{100}$ optimal?}
+The graph has only 2 edges; each contributes at least $-1$ to the sum,
+so the minimum possible value is $-2$.
+Since $\ket{100}$ achieves $-2$, it \textbf{minimizes} the expectation value
+and is therefore optimal. $\ket{010}$ with value $0$ is not.
+\end{solution}
+
+\begin{exercice}[p.~104]
+Write code to compute the expectation value of all the possible cuts of the graph in
+\emph{Figure~3.5} (three vertices $0$, $1$, $2$ with edges $(0,1)$ and $(0,2)$).
+How many optimal solutions are there?
+\end{exercice}
+
+\begin{solution}
+The code iterates over all $2^3 = 8$ computational basis states, builds each statevector
+via tensor product, and computes $\langle x \mid H_\text{cut} \mid x \rangle$
+with \texttt{psi.expectation\_value(H\_cut)}.
+
+\medskip
+\begin{tcolorbox}[colback=gray!10, colframe=gray!50, fonttitle=\bfseries\small,
+  title={Python --- expectation values (Chapter 3, p.~104)}, breakable]
+\begin{lstlisting}
+import itertools
+from qiskit.quantum_info import Statevector, SparsePauliOp
+
+zero = Statevector([1, 0])
+one  = Statevector([0, 1])
+H_cut = SparsePauliOp("ZZI") + SparsePauliOp("ZIZ")
+
+expectation_values = {}
+for bits in itertools.product([0, 1], repeat=3):
+    psi = zero if bits[0] == 0 else one
+    for bit in bits[1:]:
+        psi = psi ^ (zero if bit == 0 else one)
+    expectation_values[bits] = psi.expectation_value(H_cut)
+
+for bits, val in expectation_values.items():
+    print(f"|{''.join(map(str,bits))}> : {val.real:6.2f}")
+\end{lstlisting}
+\end{tcolorbox}
+
+\medskip
+\begin{center}
+\setlength{\tabcolsep}{10pt}
+\renewcommand{\arraystretch}{1.0}
+\begin{tabular}{ccc}
+  \gridcell{000}{\minigraph{vertex}{vertex}{vertex}{kept edge}{kept edge}}{+2}
+  & \gridcell{001}{\minigraph{vertex}{vertex}{vset2}{kept edge}{cut edge}}{0}
+  & \gridcell{010}{\minigraph{vertex}{vset2}{vertex}{cut edge}{kept edge}}{0} \\[14pt]
+  \gridcell{011}{\minigraph{vertex}{vset2}{vset2}{cut edge}{cut edge}}{-2}
+  & \gridcell{100}{\minigraph{vset2}{vertex}{vertex}{cut edge}{cut edge}}{-2}
+  & \gridcell{101}{\minigraph{vset2}{vertex}{vset2}{cut edge}{kept edge}}{0} \\[14pt]
+  \gridcell{110}{\minigraph{vset2}{vset2}{vertex}{kept edge}{cut edge}}{0}
+  & \gridcell{111}{\minigraph{vset2}{vset2}{vset2}{kept edge}{kept edge}}{+2}
+  & \\
+\end{tabular}
+\end{center}
+
+The minimum value is $\mathbf{-2}$, achieved by \textbf{2 optimal solutions}:
+$\ket{011}$ and $\ket{100}$ (both cut all edges). This confirms the result from Exercise~3.3.
+\end{solution}
+
+\begin{exercice}[p.~109]
+Write the Subset Sum problem for $S = \{-1, -2, 3, -4\}$ and $T = 0$ as a QUBO problem,
+and transform it into an instance of the Ising model.
+\end{exercice}
+
+\begin{solution}
+\textbf{QUBO formulation.}
+Assign a binary variable $x_j \in \{0,1\}$ to each element $s_j \in S$.
+The subset sum constraint $\sum_j s_j x_j = T = 0$ is enforced by minimizing its square:
+\[
+  \text{Minimize}\quad f(x) = \bigl(x_0 - 2x_1 + 3x_2 - 4x_3\bigr)^2,
+  \qquad x_j \in \{0,1\}.
+\]
+Expanding and using $x_j^2 = x_j$:
+\begin{align*}
+  f(x) =\; & x_0 + 4x_1 + 9x_2 + 16x_3 \\
+           & - 4x_0x_1 + 6x_0x_2 - 8x_0x_3 - 12x_1x_2 + 16x_1x_3 - 24x_2x_3.
+\end{align*}
+
+\textbf{Ising conversion.}
+Substitute $x_j = \tfrac{1-z_j}{2}$ with $z_j \in \{-1,+1\}$ directly into the quadratic form:
+\[
+  f(x) = (x_0 - 2x_1 + 3x_2 - 4x_3)^2
+\]
+Grouping the terms under a common denominator inside the square gives:
+\[
+  H = \left( \frac{(1 - z_0) - 2(1 - z_1) + 3(1 - z_2) - 4(1 - z_3)}{2} \right)^2
+\]
+Expanding and simplifying the numerator yields:
+\[
+  H = \frac{1}{4} \Big[ -z_0 + 2z_1 - 3z_2 + 4z_3 - 2 \Big]^2
+\]
+Since $z_j^2 = 1$, all squared terms evaluate to constants ($1 + 4 + 9 + 16 + 4 = 34$) and can be dropped as they do not affect the minimizer. 
+
+Expanding the remaining cross-products (using the identity $(A+B+C+D+E)^2 = \sum \text{squares} + 2\sum \text{cross-products}$) gives the interaction terms and the linear longitudinal fields.
+
+\medskip
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcr}
+  \textbf{Pair $(i,j)$} & \textbf{Cross-product term} & \textbf{Ising coupling} ($J_{ij}$) \\
+  \hline
+  $(0,1)$ & $2(-z_0)(2z_1) = -4z_0z_1$   & $-z_0z_1$   \\
+  $(0,2)$ & $2(-z_0)(-3z_2) = 6z_0z_2$   & $\tfrac{3}{2}z_0z_2$  \\
+  $(0,3)$ & $2(-z_0)(4z_3) = -8z_0z_3$   & $-2z_0z_3$   \\
+  $(1,2)$ & $2(2z_1)(-3z_2) = -12z_1z_2$ & $-3z_1z_2$   \\
+  $(1,3)$ & $2(2z_1)(4z_3) = 16z_1z_3$   & $4z_1z_3$    \\
+  $(2,3)$ & $2(-3z_2)(4z_3) = -24z_2z_3$ & $-6z_2z_3$   \\
+\end{tabular}
+\end{center}
+
+\medskip
+The linear $z_j$ coefficients are obtained from the cross-products between each variable and the constant term $-2$, scaled by the global factor $\tfrac{1}{4}$:
+\begin{align*}
+  z_0 &:\; \frac{2(-z_0)(-2)}{4} = +z_0, &
+  z_1 &:\; \frac{2(2z_1)(-2)}{4} = -2z_1, \\
+  z_2 &:\; \frac{2(-3z_2)(-2)}{4} = +3z_2, &
+  z_3 &:\; \frac{2(4z_3)(-2)}{4} = -4z_3.
+\end{align*}
+
+The final Ising Hamiltonian (up to a global constant) is:
+\begin{align*}
+  H =\; & -z_0z_1 + \tfrac{3}{2}z_0z_2 - 2z_0z_3 - 3z_1z_2 + 4z_1z_3 - 6z_2z_3 \\
+        & + z_0 - 2z_1 + 3z_2 - 4z_3.
+\end{align*}
+\end{solution}
+
+\begin{exercice}[p.~115]
+Consider objects with values $v = (3, 1, 7, 7)$ and weights $w = (2, 1, 5, 4)$.
+Write the Knapsack problem for the case in which the maximum weight is $W = 8$
+as a binary linear program.
+\end{exercice}
+
+\begin{solution}
+With $v = (3,1,7,7)$, $w = (2,1,5,4)$, $W = 8$, and binary variables $x_j \in \{0,1\}$:
+\[
+  \text{Minimise} \quad -3x_0 - x_1 - 7x_2 - 7x_3,
+  \qquad \text{subject to} \quad 2x_0 + x_1 + 5x_2 + 4x_3 \leq 8.
+\]
+\end{solution}
+
+\begin{exercice}[p.~119]
+Consider the graph below (four vertices, edges $(0,1)$, $(0,2)$, $(1,3)$, $(2,3)$).
+
+\medskip
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+  \node[vertex] (0) at (0,   1) {0};
+  \node[vertex] (1) at (1.5, 2) {1};
+  \node[vertex] (2) at (1.5, 0) {2};
+  \node[vertex] (3) at (3,   1) {3};
+  \draw[kept edge] (0)--(1);
+  \draw[kept edge] (0)--(2);
+  \draw[kept edge] (1)--(3);
+  \draw[kept edge] (2)--(3);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+Write the QUBO version of the problem of checking whether the graph is $2$-colorable.
+\end{exercice}
+
+\begin{solution}
+Introduce binary variables $x_{jl} \in \{0,1\}$ where $x_{jl} = 1$ means vertex $j$ receives color $l \in \{0,1\}$.
+Two penalty terms enforce the constraints:
+\begin{itemize}
+  \item \textbf{Each vertex gets exactly one color:} $\displaystyle\sum_{l=0}^{1} x_{jl} = 1$,
+        penalised as $\left(\sum_{l=0}^{1} x_{jl} - 1\right)^2$.
+  \item \textbf{Adjacent vertices get different colors:} for each edge $(j,h)$ and each color $l$,
+        $x_{jl}$ and $x_{hl}$ cannot both be $1$, penalised as $x_{jl}x_{hl}$.
+\end{itemize}
+The full QUBO is:
+\[
+  \text{Minimise} \quad
+  \sum_{j=0}^{3}\sum_{l=0}^{1}\!\left(x_{jl} - 1\right)^2
+  \;+\;
+  \sum_{(j,h)\in E}\;\sum_{l=0}^{1} x_{jl}\,x_{hl},
+  \qquad x_{jl} \in \{0,1\}.
+\]
+The graph is $2$-colorable if and only if the minimum is $0$.
+Here the optimum is achieved by $x_{0,0}=x_{3,0}=x_{1,1}=x_{2,1}=1$ (all other $x_{jl}=0$),
+confirming the graph is 2-colorable (the $4$-cycle is bipartite).
+
+\medskip
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+  \node[vset1] (0) at (0,   1) {0};
+  \node[vset2] (1) at (1.5, 2) {1};
+  \node[vset2] (2) at (1.5, 0) {2};
+  \node[vset1] (3) at (3,   1) {3};
+  \draw[cut edge] (0)--(1);
+  \draw[cut edge] (0)--(2);
+  \draw[cut edge] (1)--(3);
+  \draw[cut edge] (2)--(3);
+  \node[vset1, minimum size=14pt] at (1.5,-0.9) {};
+  \node[anchor=west] at (1.75,-0.9) {\small color $0$: $\{0,3\}$};
+  \node[vset2, minimum size=14pt] at (1.5,-1.45) {};
+  \node[anchor=west] at (1.75,-1.45) {\small color $1$: $\{1,2\}$};
+\end{tikzpicture}
+\end{center}
+\end{solution}
+
+\begin{exercice}[p.~121]
+Consider the following weighted graph (\emph{Figure~3.7}) with 4 cities and symmetric edge costs:
+
+\medskip
+\begin{center}
+\begin{tikzpicture}[scale=1.6]
+  \node[vertex] (0) at (0, 2) {0};
+  \node[vertex] (1) at (0, 0) {1};
+  \node[vertex] (2) at (3, 2) {2};
+  \node[vertex] (3) at (3, 0) {3};
+  % edges with weight labels
+  \draw[kept edge] (0)--(2) node[midway, above]       {\small 1};
+  \draw[kept edge] (0)--(1) node[midway, left]        {\small 2};
+  \draw[kept edge] (2)--(3) node[midway, right]       {\small 1};
+  \draw[kept edge] (1)--(3) node[midway, below]       {\small 1};
+  \draw[kept edge] (0)--(3) node[pos=0.35, below right] {\small 3};
+  \draw[kept edge] (2)--(1) node[pos=0.35, below left]  {\small 4};
+\end{tikzpicture}
+\end{center}
+
+\medskip
+Obtain the QUBO expression for the route cost in the TSP problem.
+The cost is symmetric ($w_{jk} = w_{kj}$) and the formulation uses binary variables
+$x_{jl} \in \{0,1\}$ ($x_{jl}=1$ means city $j$ is visited at step $l$), with $m = 3$ steps
+and cities $j \in \{0,1,2,3\}$:
+\[
+  \text{Minimise}\quad
+  \sum_{l=0}^{m-1}\sum_{j=0}^{m}\sum_{k=0}^{m} w_{jk}\,x_{jl}\,x_{k,l+1}
+  \;+\; B\!\left(\sum_{l=0}^{m} x_{jl} - 1\right)^{\!2}
+  \;+\; B\!\left(\sum_{j=0}^{m} x_{jl} - 1\right)^{\!2},
+  \quad x_{jl}\in\{0,1\}.
+\]
+\end{exercice}
+
+\begin{solution}
+The edge set with weights is
+$E = \{(0,2,1),\,(0,1,2),\,(2,3,1),\,(1,3,1),\,(0,3,3),\,(2,1,4)\}$
+(notation: $(j,k,w_{jk})$). The symmetric weight matrix is:
+\[
+  W = \begin{pmatrix}
+    0 & 2 & 1 & 3 \\
+    2 & 0 & 4 & 1 \\
+    1 & 4 & 0 & 1 \\
+    3 & 1 & 1 & 0
+  \end{pmatrix}.
+\]
+
+The route-cost term (first sum) counts the cost of travelling from the city visited at step $l$
+to the city visited at step $l+1$.
+Expanding over all $(j,k)$ pairs with $w_{jk}>0$ and steps $l\in\{0,1,2\}$
+(indices mod $m$ for the return leg):
+\begin{align*}
+  C_{\text{route}} = \;&
+    2(x_{0,0}x_{1,1} + x_{0,1}x_{1,2} + x_{0,2}x_{1,0}) \\
+  +\;& (x_{0,0}x_{2,1} + x_{0,1}x_{2,2} + x_{0,2}x_{2,0}) \\
+  +\;& 3(x_{0,0}x_{3,1} + x_{0,1}x_{3,2} + x_{0,2}x_{3,0}) \\
+  +\;& 4(x_{2,0}x_{1,1} + x_{2,1}x_{1,2} + x_{2,2}x_{1,0}) \\
+  +\;& (x_{2,0}x_{3,1} + x_{2,1}x_{3,2} + x_{2,2}x_{3,0}) \\
+  +\;& (x_{1,0}x_{3,1} + x_{1,1}x_{3,2} + x_{1,2}x_{3,0}),
+\end{align*}
+where symmetry ($w_{jk}=w_{kj}$) means each undirected edge contributes in both directions
+and the factor of $2$ is already absorbed into the coefficients above.
+\end{solution}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Fin du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

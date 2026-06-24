@@ -1,0 +1,408 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exercices — Informatique Quantique — Chapitre 4
+%% Stage LIA / CERI — Université d'Avignon
+%% Stagiaire : Patrice SEBASTIANO
+%% Encadrant : Serigne GUEYE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \documentclass[light]{ceri/sty/rapport}
+% \documentclass[handout]{ceri/sty/rapport}
+\documentclass{ceri/sty/rapport}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Informations générales
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\major{Master d'Informatique}
+\specialization{Informatique Quantique}
+\course{Stage de Recherche — LIA Avignon}
+
+\title{Exercices — Chapitre 4}
+\subtitle{Optimisation combinatoire quantique}
+
+\author{
+	Patrice SEBASTIANO
+}
+
+\advisor[Encadrant]{
+	Serigne GUEYE
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Packages supplémentaires
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ifthen}
+\usepackage{amsmath, amssymb}
+\usepackage{mathtools}
+\usepackage{braket}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins, listings}
+\usepackage{listings}
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries\color{blue!70!black},
+  stringstyle=\color{green!50!black},
+  commentstyle=\itshape\color{gray},
+  breaklines=true,
+  frame=none,
+  showstringspaces=false,
+}
+
+% Couleurs personnalisées
+\definecolor{exo-bg}{RGB}{230, 240, 255}
+\definecolor{exo-border}{RGB}{50, 100, 200}
+\definecolor{sol-bg}{RGB}{230, 255, 235}
+\definecolor{sol-border}{RGB}{40, 160, 60}
+
+% Dessin de graphes
+\usetikzlibrary{graphs, graphdrawing}
+\usegdlibrary{force}
+
+\tikzset{
+  vertex/.style={circle, draw=gray!70, fill=gray!25, thick, minimum size=22pt, font=\bfseries\small},
+  vset1/.style={circle, draw=blue!70, fill=blue!20, thick, minimum size=22pt, font=\bfseries\small},
+  vset2/.style={circle, draw=red!70,  fill=red!20,  thick, minimum size=22pt, font=\bfseries\small},
+  cut edge/.style={dashed, thick, draw=black!60},
+  kept edge/.style={thick, draw=gray!60},
+}
+
+% Environnement exercice — argument optionnel = référence page du livre
+\newcounter{exercice}[section]
+\renewcommand{\theexercice}{\thesection.\arabic{exercice}}
+
+\newtcolorbox[use counter=exercice]{exercice}[1][]{%
+	colback=exo-bg,
+	colframe=exo-border,
+	fonttitle=\bfseries,
+	title={Exercice~\theexercice \ifthenelse{\equal{#1}{}}{}{~---~#1}},
+	breakable,
+	before upper={\parindent=1em}
+}
+
+\newtcolorbox{solution}{%
+	colback=sol-bg,
+	colframe=sol-border,
+	fonttitle=\bfseries,
+	title={Solution},
+	breakable,
+	before upper={\parindent=1em}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Début du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+\sloppy
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Exercices du Chapitre 4}
+\label{sec:chap4}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ----------------------------------------------------------------
+\begin{exercice}[p.~130]
+Prove that $\ket{\psi_0} = \bigotimes_{j=0}^{n-1} \ket{+}$ has the minimum possible energy for
+\[
+  H_0 = -\sum_{j=0}^{n-1} X_j,
+\]
+by first showing that, for each $j$ and each state $\ket{\psi}$, it holds that
+$\langle \psi | X_j | \psi \rangle \leq 1$, and then showing that
+$\langle \psi_0 | X_j | \psi_0 \rangle = 1$ for each $j$.
+\end{exercice}
+
+\begin{solution}
+Soit $\ket{\psi}$ un état quantique normalisé à $n$ qubits. Nous pouvons le décomposer dans la base computationnelle sous la forme :
+\[
+\ket{\psi} = \sum_{i=0}^{2^n-1} a_i \ket{i}, \quad \text{avec} \quad \sum_{i=0}^{2^n-1} |a_i|^2 = 1.
+\]
+L'opérateur $X_j$ agit sur l'état de base $\ket{i}$ en inversant le $j$-ème bit de $i$. Algébriquement, cette opération de flip se traduit par la règle suivante :
+\[
+X_j \ket{i} = \ket{i + (-1)^{i_j}2^j}
+\]
+Puisque $X_j$ est une matrice de Pauli, elle est sa propre réciproque ($X_j^2 = I$). Ainsi, si l'on pose $\ket{k} = X_j\ket{i}$, alors on a de manière bijective $\ket{i} = X_j\ket{k}$, ce qui donne la relation réciproque sur l'indice : $i = k + (-1)^{k_j}2^j$.
+
+Calculons maintenant la valeur moyenne $\langle \psi | X_j | \psi \rangle$ en développant la double somme :
+\[
+\langle \psi | X_j | \psi \rangle = \sum_{k=0}^{2^n-1} \sum_{i=0}^{2^n-1} a_k^* a_i \bra{k} X_j \ket{i} = \sum_{k=0}^{2^n-1} \sum_{i=0}^{2^n-1} a_k^* a_i \braket{k | i + (-1)^{i_j}2^j}
+\]
+Le produit scalaire de la base orthogonale $\braket{k | i + (-1)^{i_j}2^j}$ est non nul (égal à $1$) si et seulement si $k = i + (-1)^{i_j}2^j$, ou de manière équivalente $i = k + (-1)^{k_j}2^j$. En injectant cette condition, la double somme devient :
+\[
+\langle \psi | X_j | \psi \rangle = \sum_{k=0}^{2^n-1} a_k^* a_{k + (-1)^{k_j}2^j}
+\]
+Posons $b_k = a_{k + (-1)^{k_j}2^j}$. L'opération de flip n'étant qu'une permutation globale des indices, l'ensemble des coefficients $b_k$ est une réorganisation exacte des coefficients $a_k$. Par conséquent, la norme du vecteur des amplitudes reste inchangée : $\sum |b_k|^2 = \sum |a_k|^2 = 1$.
+
+En appliquant l'inégalité de \textbf{Cauchy-Schwarz} sur le produit scalaire des vecteurs d'amplitudes $\vec{a}$ et $\vec{b}$, on obtient :
+\[
+\langle \psi | X_j | \psi \rangle = \sum_{k=0}^{2^n-1} a_k^* b_k \leq \sqrt{\sum_{k=0}^{2^n-1} |a_k|^2} \times \sqrt{\sum_{k=0}^{2^n-1} |b_k|^2}
+\]
+Comme l'état est normalisé, on remplace par les valeurs :
+\[
+\langle \psi | X_j | \psi \rangle \leq \sqrt{1} \times \sqrt{1} = 1
+\]
+On a donc bien $\langle \psi | X_j | \psi \rangle \leq 1$ pour tout état $\ket{\psi}$ et tout qubit $j$.
+
+\subsection*{Étape 2 : Évaluation pour l'état fondamental $\ket{\psi_0}$}
+
+Considérons à présent l'état $\ket{\psi_0} = \bigotimes_{j=0}^{n-1} \ket{+}$. Cet état correspond à la superposition uniforme de tous les états de la base computationnelle :
+\[
+\ket{\psi_0} = \frac{1}{\sqrt{2^n}} \sum_{k=0}^{2^n-1} \ket{k}
+\]
+Ici, pour tout $k$, l'amplitude est constante et vaut $a_k = \frac{1}{\sqrt{2^n}}$. En reprenant la formule simplifiée établie à l'étape précédente, on a :
+\[
+\langle \psi_0 | X_j | \psi_0 \rangle = \sum_{k=0}^{2^n-1} a_k a_{k + (-1)^{k_j}2^j} = \sum_{k=0}^{2^n-1} \left( \frac{1}{\sqrt{2^n}} \times \frac{1}{\sqrt{2^n}} \right) = \sum_{k=0}^{2^n-1} \frac{1}{2^n}
+\]
+La somme contenant exactement $2^n$ termes (les $2^n$ configurations de la base), on obtient :
+\[
+\langle \psi_0 | X_j | \psi_0 \rangle = 2^n \times \frac{1}{2^n} = 1
+\]
+
+\subsection*{Conclusion : Minimum de l'énergie}
+
+D'après l'étape 1, l'énergie moyenne de n'importe quel état $\ket{\psi}$ pour l'Hamiltonien $H_0$ est minorée par :
+\[
+\langle \psi | H_0 | \psi \rangle = -\sum_{j=0}^{n-1} \langle \psi | X_j | \psi \rangle \geq -\sum_{j=0}^{n-1} 1 = -n
+\]
+L'énergie minimale théorique possible est donc $-n$. 
+
+D'après l'étape 2, en évaluant l'énergie de l'état particulier $\ket{\psi_0}$, on trouve :
+\[
+\langle \psi_0 | H_0 | \psi_0 \rangle = -\sum_{j=0}^{n-1} \langle \psi_0 | X_j | \psi_0 \rangle = -\sum_{j=0}^{n-1} 1 = -n
+\]
+L'état $\ket{\psi_0}$ est donc bien l'état fondamental (\textit{ground state}) possédant le minimum possible d'énergie pour l'Hamiltonien $H_0$.
+\end{solution}
+
+
+% ----------------------------------------------------------------
+\begin{exercice}[p.~135]
+Create an instance of a simple QUBO problem and solve it with an annealer.
+Notice that the values for the variables in the solution will be 0 and 1 instead of 1 and $-1$.
+\end{exercice}
+
+\begin{solution}
+On choisit un problème quadratique binaire (QUBO) à trois variables $x_0, x_1, x_2 \in \{0, 1\}$ défini par l'expression d'énergie suivante :
+\[
+  E(x_0, x_1, x_2) = -x_1 + 2x_0 x_1 - 3x_0 x_2
+\]
+On le formule avec \texttt{dimod} en utilisant le type \texttt{dimod.BINARY} et on le résout par recuit simulé (\texttt{SimulatedAnnealingSampler}).
+
+\begin{tcolorbox}[colback=gray!8, colframe=gray!40, title=Code Python, fonttitle=\bfseries\small, breakable]
+\begin{lstlisting}[language=Python]
+import dimod
+from dwave.samplers import SimulatedAnnealingSampler
+
+# Definition de la matrice QUBO (h pour le lineaire, J pour le quadratique)
+J = {(0, 1): 2, (0, 2): -3}
+h = {1: -1}
+
+# On specifie le type BINARY pour travailler sur les valeurs {0, 1}
+problem = dimod.BinaryQuadraticModel(h, J, 0.0, dimod.BINARY)
+
+sampler = SimulatedAnnealingSampler()
+result = sampler.sample(problem, num_reads=10)
+print(result)
+\end{lstlisting}
+\end{tcolorbox}
+
+L'exécution du script produit la table d'échantillonnage suivante :
+\begin{verbatim}
+   0  1  2 energy num_oc.
+0  1  0  1    -3.0       1
+1  1  0  1    -3.0       1
+2  1  0  1    -3.0       1
+3  1  0  1    -3.0       1
+4  1  0  1    -3.0       1
+5  1  0  1    -3.0       1
+6  1  0  1    -3.0       1
+7  1  0  1    -3.0       1
+8  1  0  1    -3.0       1
+9  1  0  1    -3.0       1
+['BINARY', 10 rows, 10 samples, 3 variables]
+\end{verbatim}
+
+Les variables sont bien de type \texttt{BINARY} ($0/1$; la solution optimale est $(x_0, x_1, x_2) = (1, 0, 1)$ avec $E = -3.0$, état fondamental du QUBO.
+\end{solution}
+
+
+% ----------------------------------------------------------------
+\begin{exercice}[p.~143]
+Check that the QUBO problem returned by \texttt{cqm\_to\_bqm} coincides with what you
+would obtain should you apply the transformations explained in Section~3.4.1.
+Don't forget the offset!
+\end{exercice}
+
+\begin{solution}
+
+On part du problème contraint (Section~3.4.1) :
+\[
+  \text{Minimiser}\quad -2y_0 - 3y_1 \qquad
+  \text{s.c.}\quad y_0 + 2y_1 \leq 2,\quad y_j \in \{0,1\}.
+\]
+
+\textbf{Transformation manuelle.}
+Le membre de gauche de la contrainte peut prendre des valeurs allant de $0$ à $3$ (si $y_0=1$ et $y_1=1$). Pour satisfaire l'inégalité $\leq 2$, l'écart maximal à combler est de $2$ (lorsque $y_0 = y_1 = 0$).
+
+Ocean introduit donc deux variables de slack de poids unitaire, notées $s_0, s_1 \in \{0,1\}$, afin de pouvoir rajouter précisément $0, 1$ ou $2$ à l'équation. La contrainte d'égalité s'écrit alors :
+\[
+  y_0 + 2y_1 + s_0 + s_1 = 2
+\]
+En utilisant le multiplicateur de Lagrange $\lambda = 5$, le Hamiltonien pénalisé non contraint devient :
+\[
+  H = -2y_0 - 3y_1 + 5\bigl(y_0 + 2y_1 + s_0 + s_1 - 2\bigr)^2.
+\]
+
+En développant le carré à l'aide de l'identité $\left(\sum a_i\right)^2 = \sum a_i^2 + 2\sum_{i < j} a_i a_j$ et en exploitant la propriété des variables binaires ($v^2 = v$), on isole chaque terme :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lll}
+\hline
+Terme & Calcul algébrique & Valeur numérique \\
+\hline
+$y_0$ (linéaire) & $-2 + 5 \cdot \bigl(1^2 + 2 \cdot 1 \cdot (-2)\bigr) = -2 + 5(1 - 4)$ & $-17$ \\
+$y_1$ (linéaire) & $-3 + 5 \cdot \bigl(2^2 + 2 \cdot 2 \cdot (-2)\bigr) = -3 + 5(4 - 8)$ & $-23$ \\
+$s_0$ (linéaire) & $0 + 5 \cdot \bigl(1^2 + 2 \cdot 1 \cdot (-2)\bigr) = 5(1 - 4)$ & $-15$ \\
+$s_1$ (linéaire) & $0 + 5 \cdot \bigl(1^2 + 2 \cdot 1 \cdot (-2)\bigr) = 5(1 - 4)$ & $-15$ \\
+$y_0 y_1$ (quadratique) & $5 \cdot (2 \cdot 1 \cdot 2)$ & $20$ \\
+$y_0 s_0$ (quadratique) & $5 \cdot (2 \cdot 1 \cdot 1)$ & $10$ \\
+$y_0 s_1$ (quadratique) & $5 \cdot (2 \cdot 1 \cdot 1)$ & $10$ \\
+$y_1 s_0$ (quadratique) & $5 \cdot (2 \cdot 2 \cdot 1)$ & $20$ \\
+$y_1 s_1$ (quadratique) & $5 \cdot (2 \cdot 2 \cdot 1)$ & $20$ \\
+$s_0 s_1$ (quadratique) & $5 \cdot (2 \cdot 1 \cdot 1)$ & $10$ \\
+offset (constante) & $5 \cdot (-2)^2$ & $20$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Ces coefficients calculés à la main coïncident avec la structure du modèle binaire renvoyée par \texttt{dimod.cqm\_to\_bqm} :
+
+\begin{tcolorbox}[colback=gray!8, colframe=gray!40, title=Validation des Coefficients (Manuel vs Ocean SDK), fonttitle=\bfseries\small, breakable]
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\small
+\begin{tabular}{llcc}
+\hline
+\textbf{Variable (Manuel)} & \textbf{Variable (Ocean SDK)} & \textbf{Valeur} & \textbf{Statut} \\
+\hline
+$y_0$ & \texttt{y0} & $-17.0$ & \checkmark \\
+$y_1$ & \texttt{y1} & $-23.0$ & \checkmark \\
+$s_0$ & \texttt{slack\_vafea44a25936459bad8a6f0de953a4ab\_0} & $-15.0$ & \checkmark \\
+$s_1$ & \texttt{slack\_vafea44a25936459bad8a6f0de953a4ab\_1} & $-15.0$ & \checkmark \\
+$y_0 y_1$ & \texttt{('y1', 'y0')} & $\phantom{-}20.0$ & \checkmark \\
+$y_0 s_0$ & \texttt{('slack\_...\_0', 'y0')} & $\phantom{-}10.0$ & \checkmark \\
+$y_0 s_1$ & \texttt{('slack\_...\_1', 'y0')} & $\phantom{-}10.0$ & \checkmark \\
+$y_1 s_0$ & \texttt{('slack\_...\_0', 'y1')} & $\phantom{-}20.0$ & \checkmark \\
+$y_1 s_1$ & \texttt{('slack\_...\_1', 'y1')} & $\phantom{-}20.0$ & \checkmark \\
+$s_0 s_1$ & \texttt{('slack\_...\_1', 'slack\_...\_0')} & $\phantom{-}10.0$ & \checkmark \\
+offset & \textit{Offset global} & $\phantom{-}20.0$ & \checkmark \\
+\hline
+\end{tabular}
+\end{center}
+\end{tcolorbox}
+
+Les identifiants longs \texttt{slack\_vafea...\_0} et \texttt{slack\_vafea...\_1} correspondent à nos variables $s_0$ et $s_1$. L'offset global est bien de $20.0$, ce qui valide la correspondance entre transformation manuelle et tranformation automatique d'Ocean SDK.
+
+\end{solution}
+
+
+% ----------------------------------------------------------------
+\begin{exercice}[p.~151]
+Pick the qubits numbered from 0 to 7 and check that their connections correspond
+to the description of the Chimera topology that we have made in the text. Notice
+that they all lie in the top-left corner cell, so they will be connected to one cell on
+the right and one cell below.
+\end{exercice}
+
+\begin{solution}
+
+\subsection*{Topologie Chimera — Structure d'une cellule}
+
+Dans la topologie Chimera, les qubits sont organisés en une grille de cellules, chaque cellule contenant 8 qubits répartis en deux groupes selon leur orientation physique :
+\begin{itemize}
+  \item \textbf{Groupe horizontal} : qubits $0, 1, 2, 3$
+  \item \textbf{Groupe vertical} : qubits $4, 5, 6, 7$
+\end{itemize}
+Au sein d'une même cellule, chaque qubit horizontal croise les 4 qubits verticaux, formant un graphe biparti complet $K_{4,4}$. Il n'y a aucune connexion interne entre qubits de même orientation.
+
+Pour les connexions inter-cellules (externes), la puce du \texttt{DW\_2000Q\_6} est configurée sous forme d'une grille de $16 \times 16$ cellules. Chaque cellule contenant 8 qubits, le saut d'indexation pour passer à la cellule en dessous est de $8 \times 16 = 128$, tandis que le saut pour passer à la cellule à droite est de $8$.
+
+\subsection*{Vérification via \texttt{sampler.adjacency}}
+
+L'analyse de l'attribut \texttt{sampler.adjacency} pour la première cellule (qubits 0 à 7) donne les voisinages exacts suivants :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{cll}
+\hline
+\textbf{Qubit} & \textbf{Voisins détectés} & \textbf{Interprétation de la connexion externe} \\
+\hline
+0 & 4, 5, 6, 7, \textbf{128} & Vers l'homologue $0$ de la cellule du \textbf{bas} ($0 + 128$) \\
+1 & 4, 5, 6, 7, \textbf{129} & Vers l'homologue $1$ de la cellule du \textbf{bas} ($1 + 128$) \\
+2 & 4, 5, 6, 7, \textbf{130} & Vers l'homologue $2$ de la cellule du \textbf{bas} ($2 + 128$) \\
+3 & 4, 5, 6, 7, \textbf{131} & Vers l'homologue $3$ de la cellule du \textbf{bas} ($3 + 128$) \\
+4 & 0, 1, 2, 3, \textbf{12}  & Vers l'homologue $4$ de la cellule de \textbf{droite} ($4 + 8$) \\
+5 & 0, 1, 2, 3, \textbf{13}  & Vers l'homologue $5$ de la cellule de \textbf{droite} ($5 + 8$) \\
+6 & 0, 1, 2, 3, \textbf{14}  & Vers l'homologue $6$ de la cellule de \textbf{droite} ($6 + 8$) \\
+7 & 0, 1, 2, 3, \textbf{15}  & Vers l'homologue $7$ de la cellule de \textbf{droite} ($7 + 8$) \\
+\hline
+\end{tabular}
+\end{center}
+
+Chaque qubit possède bien exactement 5 voisins : 4 liens internes ($K_{4,4}$) et 1 unique lien externe dirigé vers la cellule adjacente correspondante.
+
+\subsection*{Représentation géométrique de la cellule}
+
+Le schéma ci-dessous représente le croisement physique des qubits au sein de la cellule $(0,0)$ et leurs extensions vers les cellules voisines.
+
+\begin{center}
+\begin{tikzpicture}[
+  hnode/.style={rounded corners=2pt, draw=blue!70, fill=blue!15, thick, minimum width=110pt, minimum height=10pt, font=\bfseries\small},
+  vnode/.style={rounded corners=2pt, draw=red!70,  fill=red!15,  thick, minimum width=10pt, minimum height=110pt, font=\bfseries\small},
+  ext/.style={draw=gray!60, dashed, thick, ->, >=stealth}
+]
+  % Qubits verticaux (4, 5, 6, 7)
+  \node[vnode] (q4) at (1, 0) {}; \node[above, red!70] at (1, 2) {4};
+  \node[vnode] (q5) at (2, 0) {}; \node[above, red!70] at (2, 2) {5};
+  \node[vnode] (q6) at (3, 0) {}; \node[above, red!70] at (3, 2) {6};
+  \node[vnode] (q7) at (4, 0) {}; \node[above, red!70] at (4, 2) {7};
+
+  % Qubits horizontaux (0, 1, 2, 3)
+  \node[hnode] (q0) at (2.5,  1) {}; \node[left, blue!70] at (0.4,  1) {0};
+  \node[hnode] (q1) at (2.5,  0) {}; \node[left, blue!70] at (0.4,  0) {1};
+  \node[hnode] (q2) at (2.5, -1) {}; \node[left, blue!70] at (0.4, -1) {2};
+  \node[hnode] (q3) at (2.5, -2) {}; \node[left, blue!70] at (0.4, -2) {3};
+
+  % Points d'intersection (coupleurs internes)
+  \foreach \x in {1,2,3,4} {
+    \foreach \y in {-2,-1,0,1} {
+      \fill[gray!80] (\x,\y) circle (2pt);
+    }
+  }
+
+  % Connexions externes vers le bas (0-3 -> 128-131)
+  \draw[ext] (0.4,  1) -- (-0.8,  1) node[left, font=\scriptsize] {vers 128};
+  \draw[ext] (0.4,  0) -- (-0.8,  0) node[left, font=\scriptsize] {vers 129};
+  \draw[ext] (0.4, -1) -- (-0.8, -1) node[left, font=\scriptsize] {vers 130};
+  \draw[ext] (0.4, -2) -- (-0.8, -2) node[left, font=\scriptsize] {vers 131};
+
+  % Connexions externes vers la droite (4-7 -> 12-15)
+  \draw[ext] (1, -2) -- (1, -3.2) node[below, font=\scriptsize] {vers 12};
+  \draw[ext] (2, -2) -- (2, -3.2) node[below, font=\scriptsize] {vers 13};
+  \draw[ext] (3, -2) -- (3, -3.2) node[below, font=\scriptsize] {vers 14};
+  \draw[ext] (4, -2) -- (4, -3.2) node[below, font=\scriptsize] {vers 15};
+
+\end{tikzpicture}
+\end{center}
+
+\end{solution}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Fin du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
