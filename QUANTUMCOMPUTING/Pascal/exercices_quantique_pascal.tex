@@ -1,0 +1,109 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exercices — Informatique Quantique — Pascal
+%% Stage LIA / CERI — Université d'Avignon
+%% Stagiaire : Patrice SEBASTIANO
+%% Encadrant : Serigne GUEYE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \documentclass[light]{ceri/sty/rapport}
+% \documentclass[handout]{ceri/sty/rapport}
+\documentclass{ceri/sty/rapport}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Informations générales
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\major{Master d'Informatique}
+\specialization{Informatique Quantique}
+\course{Stage de Recherche — LIA Avignon}
+
+\title{Exercices --- Pascal}
+\subtitle{Getting Started \& QAA to QUBO}
+
+\author{
+	Patrice SEBASTIANO
+}
+
+\advisor[Encadrant]{
+	Serigne GUEYE
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Packages supplémentaires
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ifthen}
+\usepackage{amsmath, amssymb}
+\usepackage{mathtools}
+\usepackage{braket}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins, listings}
+\usepackage{listings}
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries\color{blue!70!black},
+  stringstyle=\color{green!50!black},
+  commentstyle=\itshape\color{gray},
+  breaklines=true,
+  frame=none,
+  showstringspaces=false,
+}
+
+% Couleurs personnalisées
+\definecolor{exo-bg}{RGB}{230, 240, 255}
+\definecolor{exo-border}{RGB}{50, 100, 200}
+\definecolor{sol-bg}{RGB}{230, 255, 235}
+\definecolor{sol-border}{RGB}{40, 160, 60}
+
+% Environnement exercice — argument optionnel = référence page du livre
+\newcounter{exercice}[section]
+\renewcommand{\theexercice}{\thesection.\arabic{exercice}}
+
+\newtcolorbox[use counter=exercice]{exercice}[1][]{%
+	colback=exo-bg,
+	colframe=exo-border,
+	fonttitle=\bfseries,
+	title={Exercice~\theexercice \ifthenelse{\equal{#1}{}}{}{~---~#1}},
+	breakable,
+	before upper={\parindent=1em}
+}
+
+\newtcolorbox{solution}{%
+	colback=sol-bg,
+	colframe=sol-border,
+	fonttitle=\bfseries,
+	title={Solution},
+	breakable,
+	before upper={\parindent=1em}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Début du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+\sloppy
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Exercices}
+\label{sec:pascal}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ----------------------------------------------------------------
+\begin{exercice}[]
+
+\end{exercice}
+
+\begin{solution}
+
+\end{solution}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Fin du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

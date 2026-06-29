@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)file:///C:/Users/patri/Downloads/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>Laser–Atom Hamiltonian Simulator</title>
+  <style>
+    /* ── Layout ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f4f0;
+      color: #2c2c2a;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    h1 { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+    .subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ── Controls panel ── */
+    .panel {
+      background: #fff;
+      border: 0.5px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 14px;
+    }
+
+    .ctrl-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .ctrl-label {
+      font-size: 13px;
+      color: #555;
+      min-width: 150px;
+      line-height: 1.4;
+    }
+
+    .ctrl-label code {
+      font-family: monospace;
+      font-size: 13px;
+      color: #2c2c2a;
+    }
+
+    input[type=range] {
+      flex: 1;
+      accent-color: #534AB7;
+      cursor: pointer;
+    }
+
+    .ctrl-val {
+      font-size: 13px;
+      font-weight: 500;
+      min-width: 52px;
+      text-align: right;
+      color: #2c2c2a;
+      font-family: monospace;
+    }
+
+    /* ── Stats box ── */
+    .stats {
+      background: #f5f4f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #666;
+      line-height: 2;
+      margin-top: 4px;
+    }
+
+    .stats span {
+      color: #2c2c2a;
+      font-weight: 500;
+      font-family: monospace;
+    }
+
+    /* ── Hamiltonian display ── */
+    .hamiltonian {
+      background: #eeedfe;
+      border-left: 3px solid #534AB7;
+      border-radius: 0 8px 8px 0;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #3C3489;
+      margin-top: 16px;
+      line-height: 1.9;
+      font-family: monospace;
+    }
+
+    /* ── Canvas panels ── */
+    .canvas-wrap {
+      background: #fff;
+      border: 0.5px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    canvas {
+      display: block;
+      border-radius: 8px;
+      background: #f5f4f0;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 18px;
+      margin-top: 10px;
+      font-size: 11px;
+      color: #888;
+    }
+
+    .legend-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+
+    /* ── Dark mode ── */
+    @media (prefers-color-scheme: dark) {
+      body { background: #1a1a18; color: #e8e6e0; }
+      .panel, .canvas-wrap { background: #242422; border-color: #3a3a38; }
+      .ctrl-label { color: #aaa; }
+      .ctrl-val { color: #e8e6e0; }
+      .stats { background: #2c2c2a; color: #aaa; }
+      .stats span { color: #e8e6e0; }
+      .hamiltonian { background: #26215C; border-color: #AFA9EC; color: #CECBF6; }
+      canvas { background: #2c2c2a; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Laser–Atom Hamiltonian Simulator</h1>
+<p class="subtitle">
+  Rotating-frame Hamiltonian (RWA):
+  <code>H = (δ/2)·σ_z + (Ω/2)·(cos φ · σ_x + sin φ · σ_y)</code>
+</p>
+
+<div class="layout">
+
+  <!-- ── LEFT: Controls ── -->
+  <div class="panel">
+    <div class="panel-title">Laser parameters</div>
+
+    <!-- Ω -->
+    <div class="ctrl-row">
+      <div class="ctrl-label">
+        <code>Ω</code> — Rabi frequency<br>
+        <span style="font-size:11px;color:#aaa;">∝ laser intensity / √power</span>
+      </div>
+      <input type="range" id="slOmega" min="0.05" max="3" step="0.05" value="1.0">
+      <span class="ctrl-val" id="valOmega">1.00</span>
+    </div>
+
+    <!-- δ -->
+    <div class="ctrl-row">
+      <div class="ctrl-label">
+        <code>δ = ω − ω₀</code> — detuning<br>
+        <span style="font-size:11px;color:#aaa;">laser freq. − atom resonance</span>
+      </div>
+      <input type="range" id="slDelta" min="-3" max="3" step="0.05" value="0">
+      <span class="ctrl-val" id="valDelta">0.00</span>
+    </div>
+
+    <!-- φ -->
+    <div class="ctrl-row">
+      <div class="ctrl-label">
+        <code>φ</code> — carrier phase<br>
+        <span style="font-size:11px;color:#aaa;">sets rotation axis on equator</span>
+      </div>
+      <input type="range" id="slPhi" min="0" max="6.283" step="0.05" value="0">
+      <span class="ctrl-val" id="valPhi">0.00 π</span>
+    </div>
+
+    <!-- Animation speed -->
+    <div class="ctrl-row">
+      <div class="ctrl-label">
+        Animation speed
+      </div>
+      <input type="range" id="slSpeed" min="1" max="10" step="1" value="3">
+      <span class="ctrl-val" id="valSpeed">3</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div>Ω̃ (generalized Rabi) = <span id="dispOT">1.000 (arb. units)</span></div>
+      <div>Max population transfer = <span id="dispPop">100.0%</span></div>
+      <div>Full-flip time (π-pulse) = <span id="dispPi">3.142 × 1/Ω̃</span></div>
+      <div>Rotation axis φ = <span id="dispPhiR">0.000 π  (0.0°)</span></div>
+    </div>
+
+    <!-- Hamiltonian live view -->
+    <div class="hamiltonian" id="hamiltonianBox">H / ℏ =<br>  (0.000) σ_z<br>+ (0.500) σ_x<br>+ (0.000) σ_y</div>
+  </div>
+
+  <!-- ── RIGHT: Visuals ── -->
+  <div class="canvas-wrap">
+    <div class="panel-title" style="margin-bottom:10px;">Bloch sphere — qubit state vector</div>
+    <canvas id="cvBloch" width="480" height="380"></canvas>
+
+    <div style="margin-top:20px;">
+      <div class="panel-title" style="margin-bottom:8px;">Laser electric field E(t)</div>
+      <canvas id="cvLaser" width="480" height="100"></canvas>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#1D9E75;"></span>carrier wave</span>
+        <span><span class="legend-dot" style="background:#888;border:1px dashed #888;border-radius:0;width:14px;height:2px;vertical-align:middle;"></span>beat envelope (δ ≠ 0)</span>
+        <span><span class="legend-dot" style="background:#534AB7;"></span>state vector (Bloch)</span>
+        <span><span class="legend-dot" style="background:#BA7517;"></span>rotation axis</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── PHYSICS NOTES ── -->
+<div style="margin-top:24px;background:#fff;border:0.5px solid #ddd;border-radius:12px;padding:20px;font-size:13px;line-height:1.9;color:#555;max-width:900px;">
+  <div style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-bottom:10px;">Physics notes</div>
+  <p><strong>Ω (Rabi freq.)</strong> — proportional to the laser electric field amplitude × the dipole matrix element ⟨1|er|0⟩.
+     Increasing laser power increases Ω linearly in field, quadratically in intensity.
+     Sets the <em>speed</em> of rotation on the Bloch sphere.</p>
+  <p style="margin-top:8px;"><strong>δ (detuning)</strong> — when δ = 0 (resonance), the rotation axis is in the equatorial plane → full |0⟩↔|1⟩ inversion possible.
+     Any δ ≠ 0 tilts the axis toward |0⟩, reducing max excitation to Ω²/(Ω²+δ²) and speeding up oscillations (Ω̃ &gt; Ω).
+     Also creates beat notes in the laser envelope.</p>
+  <p style="margin-top:8px;"><strong>φ (phase)</strong> — shifts the rotation axis azimuthally. φ=0 → rotation around X (X-gate). φ=π/2 → Y-gate.
+     In hardware, this is set by an acousto-optic modulator (AOM) in nanoseconds. The phase is the cheapest parameter to control.</p>
+  <p style="margin-top:8px;"><strong>Gate recipe</strong>: choose Ω and δ, set φ to pick the axis, then pulse for time t = π/Ω̃ (π-pulse = full flip) or t = π/(2Ω̃) (Hadamard-like).</p>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+let Omega = 1.0, delta = 0.0, phi = 0.0, speed = 3;
+let animFrame = 0;
+
+// ── Elements ──
+const slO = document.getElementById('slOmega');
+const slD = document.getElementById('slDelta');
+const slP = document.getElementById('slPhi');
+const slS = document.getElementById('slSpeed');
+const vO  = document.getElementById('valOmega');
+const vD  = document.getElementById('valDelta');
+const vP  = document.getElementById('valPhi');
+const vS  = document.getElementById('valSpeed');
+const dOT  = document.getElementById('dispOT');
+const dPop = document.getElementById('dispPop');
+const dPi  = document.getElementById('dispPi');
+const dPhR = document.getElementById('dispPhiR');
+const hBox = document.getElementById('hamiltonianBox');
+const cvL  = document.getElementById('cvLaser');
+const ctxL = cvL.getContext('2d');
+const cvB  = document.getElementById('cvBloch');
+const ctxB = cvB.getContext('2d');
+
+// ══════════════════════════════════════════════════════════
+//  COLORS (auto dark/light)
+// ══════════════════════════════════════════════════════════
+function C() {
+  const dark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+  return {
+    bg:       dark ? '#2c2c2a' : '#f5f4f0',
+    sphere:   dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+    equator:  dark ? '#555' : '#bbb',
+    pole:     dark ? '#FAC775' : '#BA7517',
+    traj:     dark ? '#AFA9EC' : '#534AB7',
+    dot:      dark ? '#AFA9EC' : '#534AB7',
+    axis:     dark ? '#5DCAA5' : '#1D9E75',
+    laser:    dark ? '#5DCAA5' : '#1D9E75',
+    envelope: dark ? '#777' : '#aaa',
+    grid:     dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+    text:     dark ? '#ccc' : '#555',
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+//  BLOCH SPHERE UTILS
+// ══════════════════════════════════════════════════════════
+
+// Isometric-ish projection of a 3D point onto the canvas
+// x = right, y = into screen, z = up
+function project(x, y, z, cx, cy, R) {
+  // slight tilt so we see depth
+  const cosA = Math.cos(0.5), sinA = Math.sin(0.5);  // yaw
+  const cosB = Math.cos(0.25), sinB = Math.sin(0.25); // pitch
+  const rx =  x * cosA + y * sinA;
+  const ry = -x * sinA * sinB + y * cosA * sinB + z * cosB;
+  return { px: cx + R * rx, py: cy - R * ry };
+}
+
+// Build the Bloch trajectory by integrating the rotation
+// under H = (δ/2)σ_z + (Ω/2)(cosφ σ_x + sinφ σ_y)
+// Rotation axis in Bloch space: n = (Ω cosφ, Ω sinφ, δ) / Ω̃
+// State starts at north pole (0,0,1)
+function buildTrajectory(steps) {
+  const OT = Math.sqrt(Omega * Omega + delta * delta);
+  if (OT < 1e-6) return Array(steps + 1).fill({ x: 0, y: 0, z: 1 });
+
+  const nx = (Omega * Math.cos(phi)) / OT;
+  const ny = (Omega * Math.sin(phi)) / OT;
+  const nz = delta / OT;
+
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    // time parameterised so one full trajectory = 2 Rabi cycles
+    const angle = (i / steps) * 4 * Math.PI;
+    // Rodrigues rotation of (0,0,1) around (nx,ny,nz) by angle
+    const c = Math.cos(angle), s = Math.sin(angle);
+    const dot = nz; // n · v0 where v0=(0,0,1)
+    const crossX = ny * 1 - nz * 0; // n × v0
+    const crossY = nz * 0 - nx * 1;
+    const crossZ = nx * 0 - ny * 0;
+    const bx = 0 * c + crossX * s + nx * dot * (1 - c);
+    const by = 0 * c + crossY * s + ny * dot * (1 - c);
+    const bz = 1 * c + crossZ * s + nz * dot * (1 - c);
+    pts.push({ x: bx, y: by, z: bz });
+  }
+  return pts;
+}
+
+// ══════════════════════════════════════════════════════════
+//  DRAW: BLOCH SPHERE
+// ══════════════════════════════════════════════════════════
+const TRAJ_STEPS = 200;
+let trajCache = [];
+
+function drawBloch() {
+  const W = cvB.width, H = cvB.height;
+  const cx = W / 2, cy = H / 2 + 10;
+  const R  = Math.min(W, H) * 0.4;
+  const col = C();
+
+  ctxB.clearRect(0, 0, W, H);
+  ctxB.fillStyle = col.bg;
+  ctxB.fillRect(0, 0, W, H);
+
+  // ── Sphere outline ──
+  ctxB.strokeStyle = col.equator;
+  ctxB.lineWidth = 0.5;
+  ctxB.beginPath();
+  ctxB.arc(cx, cy, R, 0, Math.PI * 2);
+  ctxB.stroke();
+
+  // ── Latitude circles (3D ellipses approximated) ──
+  // equatorial
+  ctxB.strokeStyle = col.grid;
+  ctxB.lineWidth = 0.5;
+  for (let lat = -0.5; lat <= 0.6; lat += 0.5) {
+    const r2 = R * Math.cos(Math.asin(Math.min(1, Math.abs(lat))));
+    if (r2 < 2) continue;
+    const pts = [];
+    for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.1) {
+      const p = project(Math.cos(a), Math.sin(a), lat, cx, cy, R);
+      pts.push(p);
+    }
+    ctxB.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctxB.moveTo(p.px, p.py) : ctxB.lineTo(p.px, p.py));
+    ctxB.stroke();
+  }
+
+  // meridian lines
+  [0, Math.PI / 2].forEach(longit => {
+    const pts = [];
+    for (let lat = -Math.PI / 2; lat <= Math.PI / 2 + 0.01; lat += 0.1) {
+      const p = project(Math.cos(lat) * Math.cos(longit), Math.cos(lat) * Math.sin(longit), Math.sin(lat), cx, cy, R);
+      pts.push(p);
+    }
+    ctxB.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctxB.moveTo(p.px, p.py) : ctxB.lineTo(p.px, p.py));
+    ctxB.stroke();
+  });
+
+  // ── Axes labels ──
+  ctxB.fillStyle = col.text;
+  ctxB.font = '11px monospace';
+  const ax = project(1.15, 0, 0, cx, cy, R);
+  const ay = project(0, 1.15, 0, cx, cy, R);
+  const az = project(0, 0, 1.18, cx, cy, R);
+  ctxB.fillText('x', ax.px, ax.py);
+  ctxB.fillText('y', ay.px, ay.py);
+  ctxB.fillText('z', az.px, az.py);
+
+  // ── Poles ──
+  ctxB.fillStyle = col.pole;
+  ctxB.font = '12px monospace';
+  const pN = project(0, 0, 1, cx, cy, R);
+  const pS = project(0, 0, -1, cx, cy, R);
+  ctxB.beginPath(); ctxB.arc(pN.px, pN.py, 4, 0, Math.PI * 2); ctxB.fill();
+  ctxB.beginPath(); ctxB.arc(pS.px, pS.py, 4, 0, Math.PI * 2); ctxB.fill();
+  ctxB.fillText('|0⟩', pN.px + 6, pN.py + 4);
+  ctxB.fillText('|1⟩', pS.px + 6, pS.py + 4);
+
+  // ── Rotation axis arrow ──
+  const axEnd = project(Math.cos(phi) * 0.7, Math.sin(phi) * 0.7, (delta / Math.max(Math.sqrt(Omega * Omega + delta * delta), 0.01)) * 0.7, cx, cy, R);
+  ctxB.strokeStyle = col.axis;
+  ctxB.lineWidth = 1.5;
+  ctxB.beginPath(); ctxB.moveTo(cx, cy); ctxB.lineTo(axEnd.px, axEnd.py); ctxB.stroke();
+  ctxB.fillStyle = col.axis;
+  ctxB.beginPath(); ctxB.arc(axEnd.px, axEnd.py, 4, 0, Math.PI * 2); ctxB.fill();
+  ctxB.font = '11px system-ui';
+  ctxB.fillText('rot. axis (n̂)', axEnd.px + 6, axEnd.py);
+
+  // ── Trajectory ──
+  ctxB.strokeStyle = col.traj;
+  ctxB.lineWidth = 1.5;
+  ctxB.globalAlpha = 0.6;
+  ctxB.beginPath();
+  trajCache.forEach(({ x, y, z }, i) => {
+    const p = project(x, y, z, cx, cy, R);
+    i === 0 ? ctxB.moveTo(p.px, p.py) : ctxB.lineTo(p.px, p.py);
+  });
+  ctxB.stroke();
+  ctxB.globalAlpha = 1.0;
+
+  // ── Animated dot ──
+  const idx = animFrame % trajCache.length;
+  const cur = trajCache[idx] || { x: 0, y: 0, z: 1 };
+  const cp  = project(cur.x, cur.y, cur.z, cx, cy, R);
+
+  // dashed line from origin to dot
+  ctxB.strokeStyle = col.pole;
+  ctxB.lineWidth = 1;
+  ctxB.setLineDash([3, 4]);
+  ctxB.beginPath(); ctxB.moveTo(cx, cy); ctxB.lineTo(cp.px, cp.py); ctxB.stroke();
+  ctxB.setLineDash([]);
+
+  ctxB.fillStyle = col.dot;
+  ctxB.beginPath(); ctxB.arc(cp.px, cp.py, 6, 0, Math.PI * 2); ctxB.fill();
+
+  // population label
+  const pop = ((1 - cur.z) / 2 * 100).toFixed(1);
+  ctxB.fillStyle = col.text;
+  ctxB.font = '11px monospace';
+  ctxB.fillText('P(|1⟩) = ' + pop + '%', cp.px + 9, cp.py - 4);
+}
+
+// ══════════════════════════════════════════════════════════
+//  DRAW: LASER FIELD
+// ══════════════════════════════════════════════════════════
+function drawLaser() {
+  const W = cvL.width, H = cvL.height;
+  const col = C();
+  ctxL.clearRect(0, 0, W, H);
+  ctxL.fillStyle = col.bg;
+  ctxL.fillRect(0, 0, W, H);
+
+  const mid = H / 2;
+  const amp = H * 0.38 * Math.min(1, Omega / 1.5 + 0.1);
+
+  // zero line
+  ctxL.strokeStyle = col.equator;
+  ctxL.lineWidth = 0.5;
+  ctxL.beginPath(); ctxL.moveTo(0, mid); ctxL.lineTo(W, mid); ctxL.stroke();
+
+  // carrier wave: E(t) = Ω·cos(ω_carrier·t + φ)
+  // we show 3 optical cycles compressed into the canvas width
+  const steps = 400;
+  ctxL.strokeStyle = col.laser;
+  ctxL.lineWidth = 2;
+  ctxL.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const t = (i / steps) * 6 * Math.PI; // 3 cycles
+    // carrier oscillates at ω₀ (fixed visual freq), modulated by detuning envelope
+    const carrier = Math.cos(t + phi);
+    const envelope = Math.abs(delta) > 0.05
+      ? Math.cos(delta * t / (6 * Math.PI) * 2 * Math.PI) // slow beat
+      : 1;
+    const y = mid - amp * carrier * Math.sign(envelope) * Math.abs(envelope);
+    i === 0 ? ctxL.moveTo(0, y) : ctxL.lineTo((i / steps) * W, y);
+  }
+  ctxL.stroke();
+
+  // beat envelope (shown when δ ≠ 0)
+  if (Math.abs(delta) > 0.1) {
+    ctxL.strokeStyle = col.envelope;
+    ctxL.lineWidth = 1;
+    ctxL.setLineDash([4, 4]);
+    [1, -1].forEach(sign => {
+      ctxL.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * 6 * Math.PI;
+        const env = amp * Math.abs(Math.cos(delta * t / (6 * Math.PI) * 2 * Math.PI));
+        i === 0 ? ctxL.moveTo(0, mid - sign * env) : ctxL.lineTo((i / steps) * W, mid - sign * env);
+      }
+      ctxL.stroke();
+    });
+    ctxL.setLineDash([]);
+  }
+
+  // phase marker: vertical line showing φ offset of first zero crossing
+  const phaseX = (phi / (2 * Math.PI)) * (W / 3);
+  if (phaseX > 2 && phaseX < W - 2) {
+    ctxL.strokeStyle = col.axis;
+    ctxL.lineWidth = 1;
+    ctxL.setLineDash([2, 3]);
+    ctxL.beginPath(); ctxL.moveTo(phaseX, 0); ctxL.lineTo(phaseX, H); ctxL.stroke();
+    ctxL.setLineDash([]);
+    ctxL.fillStyle = col.axis;
+    ctxL.font = '10px monospace';
+    ctxL.fillText('φ', phaseX + 3, 11);
+  }
+
+  // axis labels
+  ctxL.fillStyle = col.text;
+  ctxL.font = '10px monospace';
+  ctxL.fillText('E(t)', 4, 12);
+  ctxL.fillText('→ t', W - 24, mid - 4);
+}
+
+// ══════════════════════════════════════════════════════════
+//  UPDATE STATS + HAMILTONIAN
+// ══════════════════════════════════════════════════════════
+function updateInfo() {
+  const OT = Math.sqrt(Omega * Omega + delta * delta);
+  const maxPop = (Omega * Omega / (Omega * Omega + delta * delta) * 100).toFixed(1);
+  const piTime = OT > 0.01 ? (Math.PI / OT).toFixed(3) : '∞';
+
+  dOT.textContent  = OT.toFixed(3) + ' (arb. units)';
+  dPop.textContent = maxPop + '%';
+  dPi.textContent  = piTime + ' × 1/Ω̃';
+  dPhR.textContent = (phi / Math.PI).toFixed(3) + ' π  (' + (phi * 180 / Math.PI).toFixed(1) + '°)';
+
+  const Ox = (Omega / 2 * Math.cos(phi)).toFixed(3);
+  const Oy = (Omega / 2 * Math.sin(phi)).toFixed(3);
+  const dh = (delta / 2).toFixed(3);
+  hBox.innerHTML =
+    'H / ℏ =<br>' +
+    '  (' + dh + ') σ_z<br>' +
+    '+ (' + Ox + ') σ_x<br>' +
+    '+ (' + Oy + ') σ_y';
+}
+
+// ══════════════════════════════════════════════════════════
+//  SLIDER LISTENERS
+// ══════════════════════════════════════════════════════════
+function readSliders() {
+  Omega = parseFloat(slO.value);
+  delta = parseFloat(slD.value);
+  phi   = parseFloat(slP.value);
+  speed = parseInt(slS.value);
+  vO.textContent = Omega.toFixed(2);
+  vD.textContent = delta.toFixed(2);
+  vP.textContent = (phi / Math.PI).toFixed(2) + ' π';
+  vS.textContent = speed;
+  trajCache = buildTrajectory(TRAJ_STEPS);
+  updateInfo();
+}
+
+slO.addEventListener('input', readSliders);
+slD.addEventListener('input', readSliders);
+slP.addEventListener('input', readSliders);
+slS.addEventListener('input', readSliders);
+
+// ══════════════════════════════════════════════════════════
+//  ANIMATION LOOP
+// ══════════════════════════════════════════════════════════
+function loop() {
+  animFrame = (animFrame + speed) % (TRAJ_STEPS + 1);
+  drawLaser();
+  drawBloch();
+  requestAnimationFrame(loop);
+}
+
+// ── Init ──
+readSliders();
+requestAnimationFrame(loop);
+</script>
+
+
+</body></html>

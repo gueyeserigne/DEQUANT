@@ -1,0 +1,6 @@
+Pulser
+https://docs.pasqal.com/pulser/tutorials/qubo/
+
+
+Pulser Studio
+https://docs.pasqal.com/pulserstudio/
