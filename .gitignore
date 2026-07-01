@@ -13,3 +13,7 @@ apikey.json
 apikey_M_Gueye.json
 CLAUDE.md
 Photos exos/
+
+# Python virtual environments
+.venv*/
+venv/
