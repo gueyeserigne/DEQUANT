@@ -17,3 +17,6 @@ Photos exos/
 # Python virtual environments
 .venv*/
 venv/
+
+# Slurm job output (not LaTeX .out) - keep these tracked
+!QUANTUMCOMPUTING/Pascal/QUBO_benchmarking/**/slurm_logs/*.out

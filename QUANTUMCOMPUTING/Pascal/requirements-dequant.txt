@@ -1,0 +1,65 @@
+# Derived from the local "pascal" Jupyter kernel (Python 3.11), filtered to
+# quantum/numerical/jupyter packages only. That kernel venv was created with
+# --system-site-packages, so most packages actually live in the global Python
+# install, not the venv — this file reconstructs the effective set without the
+# unrelated global clutter (TTS, spaCy, nipype, document conversion, etc.).
+#
+# Versions are pinned to match the local kernel exactly, EXCEPT torch: the
+# local +cu124 wheel is Windows/CUDA-12.4-specific — on joyeux, install torch
+# matching the server's actual CUDA version instead (see comment below).
+
+# --- Quantum SDKs ---
+qiskit==2.4.1
+qiskit-aer==0.17.2
+qiskit-ibm-runtime==0.47.0
+qutip==5.3.0
+pulser==1.8.0
+pulser-core==1.8.0
+pulser-pasqal==0.22.0
+pulser-simulation==1.8.0
+pasqal-cloud==0.22.0
+dimod==0.12.22
+dwave-cloud-client==0.14.6
+dwave-gate==0.3.5
+dwave-graphs==1.0.0
+dwave-greedy==0.3.0
+dwave-hybrid==0.6.16
+dwave-inspector==0.5.5
+dwave-neal==0.6.0
+dwave-ocean-sdk==9.4.0
+dwave-optimization==0.7.1
+dwave-preprocessing==0.6.11
+dwave-samplers==1.8.0
+dwave-system==1.35.0
+dwave-tabu==0.5.0
+dwave_networkx==0.8.19
+minorminer==0.2.22
+penaltymodel==1.3.0
+rustworkx==0.17.1
+ibm-cloud-sdk-core==3.24.4
+ibm-platform-services==0.75.0
+ibm-quantum-schemas==0.7.20260419
+
+# --- Numerical / ML core ---
+numpy==2.4.6
+scipy==1.17.1
+sympy==1.13.1
+networkx==3.6.1
+pandas==3.0.3
+matplotlib==3.10.8
+scikit-learn==1.9.0
+ray==2.53.0
+
+# torch: DO NOT use +cu124 as-is. Check server CUDA version first (nvidia-smi
+# inside the udocker container) and install the matching wheel, e.g.:
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+# (or cu121/cu126/etc. depending on what the driver actually supports)
+# torch==2.6.0
+# torchvision==0.21.0
+# torchaudio==2.6.0
+
+# --- Jupyter / notebook support ---
+ipykernel==7.2.0
+ipython==9.13.0
+jupyter_client==8.8.0
+jupyter_core==5.9.1
