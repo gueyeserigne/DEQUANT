@@ -1,0 +1,446 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exercices — Informatique Quantique — Pascal
+%% Stage LIA / CERI — Université d'Avignon
+%% Stagiaire : Patrice SEBASTIANO
+%% Encadrant : Serigne GUEYE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \documentclass[light]{ceri/sty/rapport}
+% \documentclass[handout]{ceri/sty/rapport}
+\documentclass{ceri/sty/rapport}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Informations générales
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\major{Master d'Informatique}
+\specialization{Informatique Quantique}
+\course{Stage de Recherche — LIA Avignon}
+
+\title{Recuit Adiabatique}
+\subtitle{Hamiltonien de Rydberg \& Mapping QUBO --- Pasqal / Pulser}
+
+\author{
+	Patrice SEBASTIANO
+}
+
+\advisor[Encadrant]{
+	Serigne GUEYE
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Packages supplémentaires
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ifthen}
+\usepackage{amsmath, amssymb}
+\usepackage{physics}
+\usepackage{mathtools}
+\usepackage{braket}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins, listings}
+\usepackage{listings}
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries\color{blue!70!black},
+  stringstyle=\color{green!50!black},
+  commentstyle=\itshape\color{gray},
+  breaklines=true,
+  frame=none,
+  showstringspaces=false,
+}
+
+% Couleurs personnalisées
+\definecolor{exo-bg}{RGB}{230, 240, 255}
+\definecolor{exo-border}{RGB}{50, 100, 200}
+\definecolor{sol-bg}{RGB}{230, 255, 235}
+\definecolor{sol-border}{RGB}{40, 160, 60}
+
+% Environnement exercice — argument optionnel = référence page du livre
+\newcounter{exercice}[section]
+\renewcommand{\theexercice}{\thesection.\arabic{exercice}}
+
+\newtcolorbox[use counter=exercice]{exercice}[1][]{%
+	colback=exo-bg,
+	colframe=exo-border,
+	fonttitle=\bfseries,
+	title={Exercice~\theexercice \ifthenelse{\equal{#1}{}}{}{~---~#1}},
+	breakable,
+	before upper={\parindent=1em}
+}
+
+\newtcolorbox{solution}{%
+	colback=sol-bg,
+	colframe=sol-border,
+	fonttitle=\bfseries,
+	title={Solution},
+	breakable,
+	before upper={\parindent=1em}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Début du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+\chead{\textcolor{black}{Recuit Adiabatique -- Hamiltonien de Rydberg \& Mapping QUBO -- Pasqal}}
+\sloppy
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Notes --- Hamiltonien adiabatique (Pulser / Pasqal)}
+\label{sec:hamiltonien}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%-------------------------------------------------------
+\subsection{L'Hamiltonien de Rydberg Général}
+%-------------------------------------------------------
+
+Sur une plateforme Pasqal, le registre d'atomes neutres est soumis à deux types d'interactions :
+chaque atome est individuellement piloté par une impulsion laser, et les paires d'atomes excités
+interagissent via les forces de Van der Waals. L'Hamiltonien total se décompose donc naturellement
+en un terme de pilotage et un terme d'interaction :
+
+\begin{equation}
+H(t) = \sum_i H_i^D(t) \;+\; \sum_{j<i} H_{ij}^{\mathrm{int}}
+\end{equation}
+
+\paragraph{Terme de pilotage $H_i^D(t)$.}
+Chaque atome est piloté par une impulsion laser décrite par trois paramètres : la fréquence de
+Rabi $\Omega(t)$, le detuning $\delta(t)$, et la phase $\varphi$. L'Hamiltonien de pilotage
+d'un atome unique sur ses deux niveaux $|g\rangle$ (fondamental) et $|r\rangle$ (Rydberg)
+s'écrit, en unités de $\hbar$ (documentation Pulser) :
+
+\begin{equation}
+\frac{H^D(t)}{\hbar} = \frac{\Omega(t)}{2}\,e^{-i\varphi}\,|g\rangle\langle r|
+\;+\; \frac{\Omega(t)}{2}\,e^{+i\varphi}\,|r\rangle\langle g|
+\;-\; \delta(t)\,|r\rangle\langle r|
+\end{equation}
+
+En développant sur la base $\{|r\rangle, |g\rangle\}$, on reconnaît les matrices de Pauli :
+
+\begin{equation}
+\frac{\Omega(t)}{2}\,e^{-i\varphi}\,|g\rangle\langle r|
++ \frac{\Omega(t)}{2}\,e^{+i\varphi}\,|r\rangle\langle g|
+= \frac{\Omega(t)}{2}
+\begin{pmatrix} 0 & e^{i\varphi} \\ e^{-i\varphi} & 0 \end{pmatrix}
+= \frac{\Omega(t)}{2}\big(\cos\varphi\,\sigma^x - \sin\varphi\,\sigma^y\big)
+\end{equation}
+
+Dans le protocole Pasqal pour le QUBO, le laser impose $\varphi = 0$ à tous les atomes,
+ce qui annule le terme en $\sigma^y$. Le terme de pilotage se simplifie alors en
+$\frac{\Omega(t)}{2}\sigma^x$.
+
+\paragraph{Terme d'interaction $H_{ij}^{\mathrm{int}}$.}
+Deux atomes simultanément dans l'état de Rydberg $|r\rangle$ ressentent une répulsion
+dipôle-dipôle qui décroît comme la sixième puissance de leur distance $r_{ij}$ :
+
+\begin{equation}
+H_{ij}^{\mathrm{int}} = \frac{C_6}{r_{ij}^6}\,\hat{n}_i\hat{n}_j
+\end{equation}
+
+\paragraph{Hamiltonien explicite ($\varphi = 0$).}
+En développant $H^D$ avec $\varphi = 0$ et en sommant sur tous les atomes, on obtient
+l'expression complète (voir annexe~\ref{ann:formalisme} pour les détails sur la convention
+des états et la définition matricielle de $\hat{n}_i$) :
+
+\begin{equation}
+H(t) = \underbrace{\Omega(t)\sum_i \sigma_i^x}_{\text{couplage Rabi}}
+\;-\; \underbrace{\hbar \sum_i \delta_i(t)\,\hat{n}_i}_{\text{detuning local}}
+\;+\; \sum_{j<i} \underbrace{\frac{C_6}{r_{ij}^6}}_{\text{interaction vdW}} \hat{n}_i \hat{n}_j
+\end{equation}
+
+%-------------------------------------------------------
+\subsection{États Propres des Termes de l'Hamiltonien}
+\label{sec:etats-propres}
+%-------------------------------------------------------
+
+Chaque terme de $H(t)$ admet un état propre de plus basse énergie. Identifier ces états
+est la clé pour comprendre la dynamique du recuit adiabatique.
+
+\medskip
+\noindent\textbf{1. Terme de couplage Rabi : minimisé par la superposition uniforme.}
+
+Le terme $\Omega(t)\sum_i \sigma_i^x$ agit via $\sigma^x$, dont les valeurs propres sont $\pm 1$ :
+
+\begin{equation}
+\sigma^x = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix},
+\qquad
+\sigma^x\,|{+}\rangle = +|{+}\rangle,
+\qquad
+\sigma^x\,|{-}\rangle = -|{-}\rangle
+\end{equation}
+
+avec $|{\pm}\rangle = \frac{1}{\sqrt{2}}\big(|0\rangle \pm |1\rangle\big)$.
+L'état propre de valeur propre $-1$ (le plus bas, puisque $\Omega > 0$) est $|{-}\rangle$.
+Sur $n$ atomes, l'état qui minimise $\Omega\sum_i\sigma_i^x$ est le produit tensoriel
+$|{-}\rangle^{\otimes n}$, qui n'est autre que la superposition uniforme de tous les états
+de la base computationnelle :
+
+\begin{equation}
+|{-}\rangle^{\otimes n}
+= \frac{1}{\sqrt{2^n}}\sum_{k=0}^{2^n-1}(-1)^{|k|}\,|k\rangle
+\end{equation}
+
+où $|k|$ désigne le poids de Hamming de $k$ (nombre de bits à $1$). En particulier, pour $n=2$ :
+
+\begin{equation}
+|{-}\rangle^{\otimes 2}
+= \frac{1}{2}\big(|00\rangle - |01\rangle - |10\rangle + |11\rangle\big)
+\end{equation}
+
+\medskip
+\noindent\textbf{2. Terme de detuning : minimisé par $|g\rangle^{\otimes n}$.}
+
+Le terme $-\hbar\sum_i\delta_i(t)\,\hat{n}_i$ agit via le projecteur $\hat{n}_i = |r\rangle\langle r|_i$.
+On vérifie d'abord sur un atome que $|g\rangle$ est vecteur propre de valeur propre $0$ :
+
+\begin{equation}
+\hat{n}\,|g\rangle
+= \begin{pmatrix} 1 & 0 \\ 0 & 0 \end{pmatrix}
+\begin{pmatrix} 0 \\ 1 \end{pmatrix}
+= 0\,|g\rangle
+\end{equation}
+
+Sur $n$ atomes, l'opérateur $\hat{n}_i$ agit comme $I\otimes\cdots\otimes\hat{n}\otimes\cdots\otimes I$
+(identité sur tous les sites sauf le site $i$). Son action sur $|gg\cdots g\rangle$ donne donc :
+
+\begin{align}
+\hat{n}_i\,|gg\cdots g\rangle
+&= |g\rangle\otimes\cdots\otimes\underbrace{\hat{n}\,|g\rangle}_{=\,0}\otimes\cdots\otimes|g\rangle
+= 0
+\end{align}
+
+La somme sur tous les sites s'annule terme à terme :
+
+\begin{align}
+-\hbar\sum_i\delta_i\,\hat{n}_i\;|gg\cdots g\rangle
+= \sum_i\big(-\hbar\delta_i\big)\,\hat{n}_i\,|gg\cdots g\rangle
+= 0
+\end{align}
+
+L'état $|gg\cdots g\rangle$ est donc vecteur propre de valeur propre nulle du terme de detuning.
+Lorsque tous les coefficients $-\hbar\delta_i$ sont positifs (ce qui correspond à $\delta_i < 0$),
+la valeur propre nulle est bien la plus basse possible : $|gg\cdots g\rangle$ est l'état qui
+minimise ce terme. C'est précisément la condition au début du recuit adiabatique
+(section~\ref{sec:recuit}, phase~1).
+
+\medskip
+\noindent\textbf{3. Terme d'interaction de Van der Waals : minimisé par $|g\rangle^{\otimes n}$.}
+
+Le terme $\sum_{j<i}\frac{C_6}{r_{ij}^6}\,\hat{n}_i\hat{n}_j$ a des coefficients strictement
+positifs ($C_6 > 0$). L'opérateur $\hat{n}_i\hat{n}_j$ agit comme
+$I_1\otimes\cdots\otimes\hat{n}_i\otimes\cdots\otimes\hat{n}_j\otimes\cdots\otimes I_n$,
+où les facteurs sont ordonnés selon les indices de site croissants $1 \le \cdots < i < \cdots < j < \cdots \le n$.
+Son action sur $|gg\cdots g\rangle$ s'écrit donc, en respectant cet ordre :
+
+\begin{equation}
+\hat{n}_i\hat{n}_j\;|gg\cdots g\rangle
+= |g\rangle_1 \otimes \cdots \otimes \underbrace{\hat{n}\,|g\rangle_i}_{=\,0}
+  \otimes \cdots \otimes \underbrace{\hat{n}\,|g\rangle_j}_{=\,0}
+  \otimes \cdots \otimes |g\rangle_n
+= 0
+\end{equation}
+
+La somme sur toutes les paires $(i,j)$ s'annule donc terme à terme :
+
+\begin{align}
+\sum_{j<i}\frac{C_6}{r_{ij}^6}\,\hat{n}_i\hat{n}_j\;|gg\cdots g\rangle
+&= \sum_{j<i}\frac{C_6}{r_{ij}^6} \cdot 0 \;=\; 0
+\end{align}
+
+Puisque tous les coefficients $C_6/r_{ij}^6$ sont strictement positifs, la valeur propre nulle
+est bien la plus basse atteignable : $|gg\cdots g\rangle$ est l'état fondamental du terme
+d'interaction de Van der Waals. Combiné au résultat précédent sur le terme de detuning,
+on conclut que $|gg\cdots g\rangle$ annule simultanément les deux derniers termes de $H(t)$,
+ce qui en fait l'état de départ naturel du recuit adiabatique (section~\ref{sec:recuit}, phase~1).
+
+%-------------------------------------------------------
+\subsection{Mapping avec le Problème QUBO}
+%-------------------------------------------------------
+
+Un problème QUBO (Quadratic Unconstrained Binary Optimization) s'écrit sous la forme standard :
+
+\begin{equation}
+\min_{x} \;\sum_{i=1}^{N} c_i\, x_i \;+\; \sum_{i=1}^{N}\sum_{j=i+1}^{N} q_{ij}\, x_i x_j,
+\qquad x_i \in \{0,1\},\quad i = 1,2,\dots,N
+\end{equation}
+
+Le mapping physique repose sur la correspondance terme à terme avec l'Hamiltonien de Rydberg.
+
+\paragraph{Termes linéaires $\leftrightarrow$ detuning local.}
+Puisque $\hat{n}_i$ joue le rôle de la variable binaire $x_i$, on identifie le coefficient
+linéaire $c_i$ au detuning local $\delta_i$ via la relation :
+
+\begin{equation}
+-\hbar\,\delta_i(t) = c_i
+\end{equation}
+
+\paragraph{Termes quadratiques $\leftrightarrow$ interaction de Van der Waals.}
+Le couplage $q_{ij}$ entre les variables $x_i$ et $x_j$ est encodé par l'interaction dipôle-dipôle
+entre deux atomes de Rydberg séparés par une distance $r_{ij}$ :
+
+\begin{equation}
+q_{ij} \;=\; \frac{C_6}{(r_{ij})^6}
+\end{equation}
+
+En ajustant la géométrie du registre d'atomes (les positions $r_{ij}$), on contrôle directement
+les poids quadratiques du QUBO. L'Hamiltonien de Rydberg est ainsi un encodage physique naturel
+de la matrice QUBO.
+
+%-------------------------------------------------------
+\subsection{Protocole du Recuit Adiabatique}
+\label{sec:recuit}
+%-------------------------------------------------------
+
+Le recuit adiabatique repose sur le \textbf{théorème adiabatique} : si un système quantique
+est initialement dans l'état fondamental de son Hamiltonien, et si ce Hamiltonien évolue
+suffisamment lentement, alors le système reste à tout instant dans l'état fondamental instantané.
+Autrement dit, le système suit continûment l'état qui minimise l'énergie, sans jamais « décrocher »
+vers un état excité.
+
+C'est cette propriété qui rend le recuit adiabatique utile pour l'optimisation : en construisant
+un Hamiltonien $H(t)$ dont l'état fondamental à $t = T$ encode la solution du QUBO, et en faisant
+évoluer le système assez lentement depuis un état fondamental connu à $t = 0$, on garantit qu'à
+la fin du protocole les atomes se trouvent dans l'état qui minimise l'énergie du problème. Il
+suffit alors de les mesurer pour lire la solution optimale.
+
+Le recuit se déroule en trois phases successives, dictées par l'évolution conjointe de
+$\Omega(t)$ et $\delta_i(t)$ sur l'intervalle $[0, T]$.
+
+\paragraph{Phase 1 --- État initial ($t = 0$, $\Omega = 0$, $\delta_i < 0$).}
+
+Au début du protocole, le couplage Rabi est nul et le detuning est strictement négatif pour tout
+site~$i$. L'Hamiltonien se réduit alors à ses deux derniers termes :
+
+\begin{equation}
+H(0) = -\hbar \sum_i \delta_i\,\hat{n}_i \;+\; \sum_{j<i} \frac{C_6}{r_{ij}^6}\,\hat{n}_i \hat{n}_j
+\end{equation}
+
+Les deux contributions sont de signe défini positif : le terme d'interaction Van der Waals a des
+coefficients $C_6/r_{ij}^6 > 0$, et le terme de detuning vaut $-\hbar\delta_i > 0$ puisque
+$\delta_i < 0$. L'énergie totale est donc une somme de termes strictement positifs pondérés par
+les $\hat{n}_i$. Elle est minimisée de manière triviale en annulant toutes les variables
+binaires, c'est-à-dire en plaçant tous les atomes dans l'état fondamental :
+
+\begin{equation}
+|\psi(0)\rangle = |gg\cdots g\rangle
+\end{equation}
+
+Le système est en équilibre adiabatique dans cet état, ce que confirment les calculs établis
+à la section~\ref{sec:etats-propres} : les termes de detuning et d'interaction de Van der Waals sont
+simultanément annulés par $|gg\cdots g\rangle$.
+
+\paragraph{Phase 2 --- Exploration quantique ($\Omega = \Omega_{\max}$, $\delta_i \approx 0$).}
+
+Au cours du recuit, $\Omega(t)$ monte jusqu'à son maximum tandis que $\delta_i(t)$ passe par zéro.
+Le terme de couplage Rabi domine alors. Comme établi à la section~\ref{sec:etats-propres}, ce terme
+est minimisé par $|{-}\rangle^{\otimes n}$, état propre de $\sigma^x$ de valeur propre $-1$ sur chaque
+site, qui correspond à une superposition cohérente de toutes les configurations du registre. Cependant, le terme d'interaction de
+Van der Waals reste présent ($C_6/r_{ij}^6$ ne dépend pas de $\delta$) et vient perturber cette
+superposition idéale, créant de l'intrication entre les atomes. C'est cette combinaison —
+superposition cohérente induite par $\Omega$ et intrication induite par les interactions de Van der
+Waals — qui permet au registre d'explorer simultanément toutes les configurations possibles du
+système. Pour une analyse détaillée de cet état intermédiaire, on renvoie le lecteur à la
+littérature sur les protocoles QAA (Quantum Adiabatic Algorithm).
+
+\paragraph{Phase 3 --- Lecture de la solution ($t = T$, $\Omega = 0$).}
+
+En fin de protocole, $\Omega$ redescend à zéro tandis que les $\delta_i(T)$ ont atteint les
+valeurs cibles fixées par le problème QUBO, via la correspondance $-\hbar\,\delta_i(T) = c_i$.
+Les coefficients $c_i$ peuvent être positifs ou négatifs selon les données du problème.
+L'Hamiltonien se réduit à ses deux derniers termes :
+
+\begin{equation}
+H(T) = -\hbar \sum_i \delta_i\,\hat{n}_i \;+\; \sum_{j<i} \frac{C_6}{r_{ij}^6}\,\hat{n}_i \hat{n}_j
+\end{equation}
+
+En substituant $-\hbar\delta_i = c_i$ et $C_6/r_{ij}^6 = q_{ij}$, on reconnaît terme à terme
+la fonction objectif du QUBO, avec $\hat{n}_i$ jouant le rôle de la variable binaire $x_i$ :
+
+\begin{equation}
+H(T) \;\longleftrightarrow\; \sum_i c_i\,x_i \;+\; \sum_{j<i} q_{ij}\,x_i x_j
+\end{equation}
+
+Par le théorème adiabatique, le système se trouve à $t = T$ dans l'état fondamental de $H(T)$,
+c'est-à-dire l'état qui minimise cette énergie. La mesure du registre donne alors directement
+le bitstring $x^* \in \{0,1\}^n$ qui minimise le QUBO.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Annexes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+\section{Formalisme des États et du Projecteur $\hat{n}_i$}
+\label{ann:formalisme}
+
+\subsubsection*{Convention des états (Pulser)}
+
+Dans la base Pulser, l'état fondamental est étiqueté $|1\rangle$ et l'état de Rydberg excité est
+étiqueté $|0\rangle$ :
+
+\begin{align}
+|g\rangle &= |1\rangle = \begin{pmatrix}0\\1\end{pmatrix} \\[4pt]
+|r\rangle &= |0\rangle = \begin{pmatrix}1\\0\end{pmatrix}
+\end{align}
+
+\subsubsection*{Définition du projecteur $\hat{n}_i$ et lien avec $\sigma^z$}
+
+L'opérateur de comptage $\hat{n}_i$ est le projecteur sur l'état de Rydberg de l'atome $i$ :
+
+\begin{equation}
+\hat{n}_i \;=\; |r\rangle\langle r|_i
+\;=\; \begin{pmatrix} 1 \\ 0 \end{pmatrix}\begin{pmatrix} 1 & 0 \end{pmatrix}
+\;=\; \begin{pmatrix} 1 & 0 \\ 0 & 0 \end{pmatrix}
+\end{equation}
+
+Il s'exprime également à partir de la matrice de Pauli $\sigma^z$ :
+
+\begin{equation}
+\hat{n}_i = \frac{1+\sigma_i^z}{2}, \qquad
+\sigma^z = \begin{pmatrix} 1 & 0 \\ 0 & -1\end{pmatrix}
+\end{equation}
+
+On vérifie cette identité matriciellement :
+
+\begin{equation}
+\frac{1+\sigma_i^z}{2} = \frac{1}{2}\left[
+\begin{pmatrix}1&0\\0&1\end{pmatrix} + \begin{pmatrix}1&0\\0&-1\end{pmatrix}
+\right]
+= \frac{1}{2}\begin{pmatrix}2 & 0\\0&0\end{pmatrix}
+= \begin{pmatrix}1&0\\0&0\end{pmatrix}
+\end{equation}
+
+\subsubsection*{Action de $\hat{n}$ sur les états de base}
+
+L'opérateur $\hat{n}$ admet deux valeurs propres : $1$ pour l'état excité $|r\rangle = |0\rangle$
+et $0$ pour l'état fondamental $|g\rangle = |1\rangle$ :
+
+\begin{align}
+\hat{n}\,|0\rangle &= 1\times|0\rangle \\
+\hat{n}\,|1\rangle &= 0\times|1\rangle
+\end{align}
+
+\subsubsection*{Action de $\hat{n}_i\hat{n}_j$ sur une superposition générale}
+
+Pour une superposition uniforme $|\psi\rangle = \frac{1}{\sqrt{2^n}}\sum_{k=0}^{2^n-1}|k\rangle$,
+l'opérateur $\hat{n}_i\hat{n}_j$ agit terme à terme sur chaque état de base, les facteurs étant
+ordonnés selon les indices de site croissants :
+
+\begin{equation}
+\hat{n}_i \hat{n}_j\,|\psi\rangle
+= \frac{1}{\sqrt{2^n}}\sum_{k=0}^{2^n-1} \left(\hat{n}_i \otimes \hat{n}_j\right)|k\rangle
+\end{equation}
+
+Seuls les états $|k\rangle$ dont les bits $i$ et $j$ valent simultanément $1$ (i.e.\ les deux
+atomes sont dans $|r\rangle$) contribuent de façon non nulle à cette somme.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Fin du document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
