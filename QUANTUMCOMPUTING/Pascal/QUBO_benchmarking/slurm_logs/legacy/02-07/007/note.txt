@@ -1,0 +1,1 @@
+test: group, expect 1 shared NNN folder

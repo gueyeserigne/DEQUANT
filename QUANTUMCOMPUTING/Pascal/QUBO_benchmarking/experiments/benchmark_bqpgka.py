@@ -11,6 +11,7 @@ Usage:
     python benchmark_bqpgka.py --files bqpgka20_1.txt bqpgka30_1.txt bqpgka50_1.txt
 """
 import argparse
+import os
 import time
 from pathlib import Path
 
@@ -25,7 +26,17 @@ from scipy.optimize import minimize
 from scipy.spatial.distance import pdist, squareform, euclidean
 
 DATA_DIR = Path("/Quantum_workspace/DATA/BQPGKA")
-OUTPUT_DIR = Path(__file__).resolve().parent / "outputs"
+
+# When launched by a Slurm script (run_bqpgka_benchmark.sh etc.), BENCHMARK_DAY/
+# BENCHMARK_RUN_ID are exported so outputs land in the same DD-MM/NNN folder as
+# the matching slurm_logs entry. Falls back to a flat outputs/<tag>/ layout when
+# run standalone (interactively, no Slurm).
+_day = os.environ.get("BENCHMARK_DAY")
+_run_id = os.environ.get("BENCHMARK_RUN_ID")
+if _day and _run_id:
+    OUTPUT_DIR = Path(__file__).resolve().parent / "outputs" / _day / _run_id
+else:
+    OUTPUT_DIR = Path(__file__).resolve().parent / "outputs"
 
 
 def load_qubo(filepath: Path) -> np.ndarray:
@@ -44,8 +55,14 @@ def load_qubo(filepath: Path) -> np.ndarray:
         i, j, v = map(int, line.split())
         i -= 1  # 1-indexed -> 0-indexed
         j -= 1
-        Q[i, j] = -v  # negate stored values
-    Q = (Q + Q.T) / 2  # symmetrise upper triangle -> full symmetric QUBO
+        if i == j:
+            Q[i, j] = v  # diag stored as-is
+        else :
+            Q[j, i] = Q[i, j] = v  # negate stored values
+    
+    # Vieu code
+    #Q = (Q + Q.T) / 2  # symmetrise upper triangle -> full symmetric QUBO
+    
     return Q
 
 
@@ -113,15 +130,13 @@ def run_instance(filename: str, truncate: int | None = None):
 
     qubits = {f"q{i}": coord for (i, coord) in enumerate(coords)}
     reg = pulser.Register(qubits)
-    fig = reg.draw(
+    reg.draw(
         blockade_radius=device.rydberg_blockade_radius(1.0),
         draw_graph=True,
         draw_half_radius=True,
+        fig_name=str(out_dir / "register.png"),
         show=False,
     )
-    if fig is not None:
-        fig.savefig(out_dir / "register.png")
-        plt.close(fig)
 
     sequence = pulser.Sequence(reg, device)
     sequence.declare_channel("rydberg_global", "rydberg_global")
@@ -141,10 +156,7 @@ def run_instance(filename: str, truncate: int | None = None):
     det_map = reg.define_detuning_map(
         {f"q{i}": det_map_weights[i] for i in range(len(det_map_weights))}
     )
-    fig = det_map.draw(labels=reg.qubit_ids, show=False)
-    if fig is not None:
-        fig.savefig(out_dir / "detuning_map.png")
-        plt.close(fig)
+    det_map.draw(labels=reg.qubit_ids, fig_name=str(out_dir / "detuning_map.png"), show=False)
 
     sequence.config_detuning_map(det_map, "dmm_0")
 
@@ -168,15 +180,13 @@ def run_instance(filename: str, truncate: int | None = None):
     sequence.add(adiabatic_pulse, "rydberg_global")
     sequence.add_dmm_detuning(pulser.ConstantWaveform(T, -delta_f), "dmm_0")
 
-    fig = sequence.draw(
+    sequence.draw(
         draw_detuning_maps=True,
         draw_qubit_det=True,
         draw_qubit_amp=True,
+        fig_name=str(out_dir / "sequence.png"),
         show=False,
     )
-    if fig is not None:
-        fig.savefig(out_dir / "sequence.png")
-        plt.close(fig)
 
     print(f"[{tag}] running simulation on GPU ({Q.shape[0]} qubits)")
     t0 = time.perf_counter()
@@ -213,9 +223,19 @@ def main():
              "curve (e.g. --qubit-sweep 10 15 20). Truncated runs use a synthetic top-left "
              "submatrix of the real QUBO — for timing only, not a real benchmark result.",
     )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Run all --files at their real, untruncated size (the actual benchmark). "
+             "Bypasses --qubit-sweep — use this once you already know timing is fine "
+             "and just want the real result.",
+    )
     args = parser.parse_args()
 
-    if args.qubit_sweep:
+    if args.full:
+        for filename in args.files:
+            run_instance(filename)
+    elif args.qubit_sweep:
         base_file = args.files[0]
         full_n = load_qubo(DATA_DIR / base_file).shape[0]
         all_timings = {}

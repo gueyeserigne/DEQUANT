@@ -1,0 +1,2 @@
+python3: can't open file '/home/data/projets-aps/projet6/Quantum_Internship_May_June_2026/DEQUANT/QUANTUMCOMPUTING/Pascal/QUBO_benchmarking/analysis/plot_gpu.py': [Errno 2] No such file or directory
+/var/spool/slurmd/job22209/slurm_script: line 93: 19286 Terminated              python3 $ANALYSIS/gpu_monitor.py --output "$GPU_LOG" --interval 5

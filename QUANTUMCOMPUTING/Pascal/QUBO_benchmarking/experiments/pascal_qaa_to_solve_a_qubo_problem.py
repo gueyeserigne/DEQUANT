@@ -4,6 +4,7 @@ QAA (Quantum Adiabatic Algorithm) to solve a QUBO problem via Pulser.
 Converted from pascal_QAA_to_solve_a_QUBO_problem.ipynb — minimal modifications:
 plots are saved to outputs/ instead of shown interactively.
 """
+import os
 from pathlib import Path
 
 import numpy as np
@@ -19,7 +20,16 @@ from scipy.spatial.distance import pdist, squareform
 from emu_sv import SVBackend, SVConfig
 from pulser.backend import BitStrings
 
-OUTPUT_DIR = Path(__file__).resolve().parent / "outputs" / "qaa_qubo_problem"
+# When launched by a Slurm script (run_qaa_qubo_test.sh), BENCHMARK_DAY/
+# BENCHMARK_RUN_ID are exported so outputs land in the same DD-MM/NNN folder as
+# the matching slurm_logs entry. Falls back to a flat outputs/qaa_qubo_problem/
+# layout when run standalone (interactively, no Slurm).
+_day = os.environ.get("BENCHMARK_DAY")
+_run_id = os.environ.get("BENCHMARK_RUN_ID")
+if _day and _run_id:
+    OUTPUT_DIR = Path(__file__).resolve().parent / "outputs" / _day / _run_id / "qaa_qubo_problem"
+else:
+    OUTPUT_DIR = Path(__file__).resolve().parent / "outputs" / "qaa_qubo_problem"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 Q = np.array(
@@ -74,15 +84,13 @@ coords = np.reshape(res.x, (len(Q), 2))
 
 qubits = {f"q{i}": coord for (i, coord) in enumerate(coords)}
 reg = pulser.Register(qubits)
-fig = reg.draw(
+reg.draw(
     blockade_radius=device.rydberg_blockade_radius(1.0),
     draw_graph=False,
     draw_half_radius=True,
+    fig_name=str(OUTPUT_DIR / "register.png"),
     show=False,
 )
-if fig is not None:
-    fig.savefig(OUTPUT_DIR / "register.png")
-    plt.close(fig)
 
 sequence = pulser.Sequence(reg, device)
 sequence.declare_channel("rydberg_global", "rydberg_global")
@@ -99,10 +107,7 @@ adiabatic_pulse = pulser.Pulse(
 )
 
 sequence.add(adiabatic_pulse, "rydberg_global")
-fig = sequence.draw(show=False)
-if fig is not None:
-    fig.savefig(OUTPUT_DIR / "sequence.png")
-    plt.close(fig)
+sequence.draw(fig_name=str(OUTPUT_DIR / "sequence.png"), show=False)
 
 # Old Code - CPU backend
 # simul = pulser_simulation.QutipBackendV2(sequence)
